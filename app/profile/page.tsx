@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { getProfile, saveProfile, type Profile } from '@/lib/profile';
 import { useAdmin } from '@/lib/admin';
+import { downloadBackup, importFromFile, summarizeBackup } from '@/lib/backup';
 
 const EMOJI_CHOICES = ['🧒', '👧', '👦', '🐻', '🐱', '🦁', '🐶', '🦊', '🐰', '🐼', '🦄', '🌟'];
 
@@ -11,6 +12,12 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile>({ name: '꼬마 영어쟁이', emoji: '🧒' });
   const [nameDraft, setNameDraft] = useState('');
   const [saved, setSaved] = useState(false);
+  const [importStatus, setImportStatus] = useState<
+    | null
+    | { kind: 'ok'; text: string }
+    | { kind: 'err'; text: string }
+  >(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { isAdmin } = useAdmin();
 
   useEffect(() => {
@@ -24,6 +31,43 @@ export default function ProfilePage() {
     setProfile(next);
     setSaved(true);
     setTimeout(() => setSaved(false), 1200);
+  };
+
+  const onExport = () => {
+    try {
+      downloadBackup();
+      setImportStatus({ kind: 'ok', text: '내보내기 파일이 다운로드됐어요' });
+    } catch (e) {
+      setImportStatus({ kind: 'err', text: `실패: ${(e as Error).message}` });
+    }
+    setTimeout(() => setImportStatus(null), 2500);
+  };
+
+  const onImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const onFileChosen = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!confirm('가져오기를 하면 현재 이 기기의 데이터를 덮어씁니다. 진행할까요?')) {
+      e.target.value = '';
+      return;
+    }
+    try {
+      const payload = await importFromFile(file);
+      const s = summarizeBackup(payload);
+      setImportStatus({
+        kind: 'ok',
+        text: `가져오기 완료 · 수업 ${s.lessonCount}개, ${s.totalPoints}P, 스테이지 ${s.wordStagesCleared}개`,
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err) {
+      setImportStatus({ kind: 'err', text: `실패: ${(err as Error).message}` });
+    }
+    e.target.value = '';
   };
 
   return (
@@ -77,10 +121,52 @@ export default function ProfilePage() {
               </div>
             </div>
             {saved && <div className="text-center text-sm text-green-600">저장됨</div>}
+
+            <div className="bg-white rounded-2xl shadow p-5 space-y-3">
+              <div>
+                <div className="text-sm font-semibold text-gray-700">데이터 관리</div>
+                <p className="text-xs text-gray-500 mt-1">
+                  다른 기기에서 이어서 쓰려면 내보내기 후, 그 기기에서 가져오기 하세요.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={onExport}
+                  className="px-4 py-3 bg-gradient-to-br from-blue-400 to-blue-600 text-white font-bold rounded-lg active:scale-95"
+                >
+                  📤 내보내기
+                </button>
+                <button
+                  onClick={onImportClick}
+                  className="px-4 py-3 bg-gradient-to-br from-violet-400 to-violet-600 text-white font-bold rounded-lg active:scale-95"
+                >
+                  📥 가져오기
+                </button>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json,.json"
+                onChange={onFileChosen}
+                className="hidden"
+              />
+              {importStatus && (
+                <div
+                  className={[
+                    'text-sm text-center rounded-lg px-3 py-2',
+                    importStatus.kind === 'ok'
+                      ? 'bg-green-50 text-green-700'
+                      : 'bg-red-50 text-red-700',
+                  ].join(' ')}
+                >
+                  {importStatus.text}
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow p-5 text-sm text-gray-500 text-center">
-            프로필 수정은 <strong>관리자 모드</strong>에서 가능해요 (상단 🔒 아이콘)
+            프로필 수정과 데이터 관리는 <strong>관리자 모드</strong>에서 가능해요 (상단 🔒 아이콘)
           </div>
         )}
       </main>
