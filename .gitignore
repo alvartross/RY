@@ -1,0 +1,65 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# next.js 빌드 찌꺼기 (루트에 실수로 생성된 경우 대비)
+/BUILD_ID
+/_events_*.json
+/app-path-routes-manifest.json
+/build-manifest.json
+/cache/
+/dev/
+/diagnostics/
+/export-marker.json
+/fallback-build-manifest.json
+/images-manifest.json
+/next-minimal-server.js.nft.json
+/next-server.js.nft.json
+/prerender-manifest.json
+/required-server-files.js
+/required-server-files.json
+/routes-manifest.json
+/server/
+/static/
+/trace
+/trace-build
+/turbopack
+/types/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

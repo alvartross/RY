@@ -1,0 +1,51 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+const items = [
+  { href: '/', label: 'Main', icon: '🏠' },
+  { href: '/record', label: 'Record', icon: '📊' },
+  { href: '/shop', label: 'Shop', icon: '🎁' },
+  { href: '/word-game', label: 'Word', icon: '📝' },
+  { href: '/tetris', label: 'Tetris', icon: '🎮' },
+];
+
+export default function BottomNav() {
+  const pathname = usePathname();
+  return (
+    <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur border-t border-gray-200 shadow-[0_-6px_20px_rgba(0,0,0,0.08)] z-30">
+      <ul className="max-w-3xl mx-auto grid grid-cols-5">
+        {items.map((it) => {
+          const active = pathname === it.href;
+          return (
+            <li key={it.href} className="relative">
+              <Link
+                href={it.href}
+                className={[
+                  'flex flex-col items-center justify-center gap-1 py-2.5 text-[12px] sm:text-[13px] font-semibold transition-colors',
+                  active
+                    ? 'text-pink-600'
+                    : 'text-gray-500 hover:text-gray-700',
+                ].join(' ')}
+              >
+                <span
+                  className={[
+                    'text-2xl sm:text-3xl leading-none transition-transform',
+                    active ? 'scale-110' : '',
+                  ].join(' ')}
+                >
+                  {it.icon}
+                </span>
+                <span>{it.label}</span>
+                {active && (
+                  <span className="absolute -top-0.5 h-1 w-10 bg-gradient-to-r from-pink-400 to-orange-400 rounded-full" />
+                )}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
