@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import BottomNav from '@/components/layout/BottomNav';
+import AppShell from '@/components/layout/AppShell';
 import './globals.css';
 
 const geistSans = Geist({
@@ -34,8 +34,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50">
-        {children}
-        <BottomNav />
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
