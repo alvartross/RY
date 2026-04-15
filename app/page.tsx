@@ -9,6 +9,8 @@ import PicturePractice from '@/components/practice/PicturePractice';
 import PhonicsPractice from '@/components/practice/PhonicsPractice';
 import TodaysLearnings from '@/components/TodaysLearnings';
 import TodayProgress from '@/components/TodayProgress';
+import TodaysWords from '@/components/TodaysWords';
+import DictionaryWidget from '@/components/DictionaryWidget';
 import TopBar from '@/components/layout/TopBar';
 import AdminPinModal from '@/components/AdminPinModal';
 import Modal from '@/components/Modal';
@@ -101,6 +103,8 @@ export default function Home() {
       <TopBar onOpenAdmin={() => setPinOpen(true)} refreshKey={refreshKey} />
 
       <main className="max-w-3xl mx-auto px-4 pt-4 pb-24 flex flex-col gap-4">
+        <DictionaryWidget />
+
         <section className="grid gap-4 sm:grid-cols-2">
           <Calendar
             lessonDates={new Set(Object.keys(lessons))}
@@ -115,6 +119,8 @@ export default function Home() {
             onOpenAdmin={() => setPinOpen(true)}
           />
         </section>
+
+        <TodaysWords lesson={selectedLesson} />
 
         <section>
           <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 px-1">
