@@ -381,6 +381,11 @@ export default function Tetris() {
     }
   }, [sfx]);
 
+  const softDropRef = useRef(softDrop);
+  useEffect(() => {
+    softDropRef.current = softDrop;
+  }, [softDrop]);
+
   useEffect(() => {
     if (!running || paused) return;
     let last = performance.now();
@@ -397,13 +402,13 @@ export default function Tetris() {
       const ival = dropIntervalFor(levelRef.current);
       if (acc > ival) {
         acc = 0;
-        softDrop();
+        softDropRef.current();
       }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [running, paused, softDrop]);
+  }, [running, paused]);
 
   useEffect(() => {
     if (!running || paused) return;
@@ -537,70 +542,120 @@ export default function Tetris() {
   }, [running, paused, move, softDrop, rotatePiece, hardDrop]);
 
   const timerWarn = timeLeft <= 60;
+  const swipeRef = useRef<{ x: number; y: number; t: number; lastCellDx: number } | null>(null);
+  const SWIPE_CELL_PX = 28;
+
+  const onPlayPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!running || paused) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    swipeRef.current = { x: e.clientX, y: e.clientY, t: Date.now(), lastCellDx: 0 };
+  };
+
+  const onPlayPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!swipeRef.current) return;
+    const dx = e.clientX - swipeRef.current.x;
+    const cellsTotal = Math.trunc(dx / SWIPE_CELL_PX);
+    const delta = cellsTotal - swipeRef.current.lastCellDx;
+    if (delta !== 0) {
+      const dir = Math.sign(delta);
+      for (let i = 0; i < Math.abs(delta); i++) {
+        move(dir, 0);
+      }
+      swipeRef.current.lastCellDx = cellsTotal;
+    }
+  };
+
+  const onPlayPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const swipe = swipeRef.current;
+    swipeRef.current = null;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+    if (!swipe) return;
+    const dx = e.clientX - swipe.x;
+    const dy = e.clientY - swipe.y;
+    const dt = Date.now() - swipe.t;
+    if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && dt < 280) {
+      rotatePiece();
+    } else if (dy > 80 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+      hardDrop();
+    } else if (dy > 30 && Math.abs(dy) > Math.abs(dx)) {
+      softDrop();
+    }
+  };
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full">
-      <div className="flex flex-col sm:flex-row gap-3 w-full items-center justify-center">
-        <div
-          className="relative"
-          style={{ width: 'min(90vw, 300px)', aspectRatio: `${COLS}/${ROWS}` }}
-        >
-          <canvas
-            ref={canvasRef}
-            width={COLS * TILE}
-            height={ROWS * TILE}
-            className="rounded-lg shadow-lg w-full h-full"
-          />
-          {flash && (
-            <div
-              key={flash.key}
-              className="pointer-events-none absolute inset-0 flex items-center justify-center"
-            >
-              <span
-                className={`text-5xl sm:text-6xl font-black tracking-wider bg-gradient-to-br ${flash.color} bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] animate-[praise_0.9s_ease-out_forwards]`}
-              >
-                {flash.text}
-              </span>
-            </div>
-          )}
-          <style jsx>{`
-            @keyframes praise {
-              0% { transform: scale(0.3); opacity: 0; }
-              30% { transform: scale(1.2); opacity: 1; }
-              60% { transform: scale(1); opacity: 1; }
-              100% { transform: scale(1.1); opacity: 0; }
-            }
-          `}</style>
-        </div>
-        <div className="flex flex-row sm:flex-col gap-2 justify-center flex-wrap">
-          <Stat label="TIME" value={formatTime(timeLeft)} warn={timerWarn} />
-          <Stat label="SCORE" value={score} />
-          <Stat label="LINES" value={lines} />
-          <Stat label="LEVEL" value={level} />
-          <div className="bg-slate-900 rounded-lg p-2 text-center">
-            <div className="text-[10px] text-slate-400 font-bold">NEXT</div>
-            <canvas
-              ref={nextRef}
-              width={100}
-              height={100}
-              className="rounded"
-            />
-          </div>
+    <div className="flex flex-col items-center gap-2 w-full">
+      <div className="flex items-center gap-1.5 w-full max-w-md justify-center flex-wrap">
+        <CompactStat label="TIME" value={formatTime(timeLeft)} warn={timerWarn} />
+        <CompactStat label="SCORE" value={score} />
+        <CompactStat label="LINES" value={lines} />
+        <CompactStat label="LEVEL" value={level} />
+        <div className="bg-slate-900 rounded-lg px-2 py-1 flex items-center gap-1.5">
+          <span className="text-[10px] text-slate-400 font-bold">NEXT</span>
+          <canvas ref={nextRef} width={60} height={60} className="rounded w-9 h-9" />
         </div>
       </div>
 
-      <div className="flex gap-2 mt-1">
+      <div
+        className="relative touch-none select-none"
+        style={{ width: 'min(92vw, 360px)', aspectRatio: `${COLS}/${ROWS}` }}
+        onPointerDown={onPlayPointerDown}
+        onPointerMove={onPlayPointerMove}
+        onPointerUp={onPlayPointerUp}
+        onPointerCancel={onPlayPointerUp}
+      >
+        <canvas
+          ref={canvasRef}
+          width={COLS * TILE}
+          height={ROWS * TILE}
+          className="rounded-lg shadow-lg w-full h-full pointer-events-none"
+        />
+        {flash && (
+          <div
+            key={flash.key}
+            className="pointer-events-none absolute inset-0 flex items-center justify-center"
+          >
+            <span
+              className={`text-5xl sm:text-6xl font-black tracking-wider bg-gradient-to-br ${flash.color} bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] animate-[praise_0.9s_ease-out_forwards]`}
+            >
+              {flash.text}
+            </span>
+          </div>
+        )}
+        {paused && running && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg pointer-events-none">
+            <span className="text-3xl font-black text-white">⏸ PAUSED</span>
+          </div>
+        )}
+        {!running && !gameOver && (
+          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center rounded-lg gap-2 pointer-events-none">
+            <span className="text-2xl font-bold text-white">▶ 시작 버튼을 누르세요</span>
+            <span className="text-xs text-white/80">화면을 탭하면 회전, 좌우 드래그로 이동</span>
+          </div>
+        )}
+        <style jsx>{`
+          @keyframes praise {
+            0% { transform: scale(0.3); opacity: 0; }
+            30% { transform: scale(1.2); opacity: 1; }
+            60% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.1); opacity: 0; }
+          }
+        `}</style>
+      </div>
+
+      <div className="flex gap-2">
         {!running || gameOver ? (
           <button
             onClick={start}
-            className="px-6 py-3 bg-gradient-to-br from-cyan-400 to-blue-500 text-white font-bold rounded-xl shadow-lg active:scale-95"
+            className="px-6 py-2.5 bg-gradient-to-br from-cyan-400 to-blue-500 text-white font-bold rounded-xl shadow-lg active:scale-95"
           >
             {gameOver ? '🔁 다시 시작' : '▶ 시작'}
           </button>
         ) : (
           <button
             onClick={() => setPaused((p) => !p)}
-            className="px-6 py-3 bg-gradient-to-br from-violet-400 to-purple-500 text-white font-bold rounded-xl shadow-lg active:scale-95"
+            className="px-6 py-2.5 bg-gradient-to-br from-violet-400 to-purple-500 text-white font-bold rounded-xl shadow-lg active:scale-95"
           >
             {paused ? '▶ 계속' : '⏸ 일시정지'}
           </button>
@@ -608,17 +663,15 @@ export default function Tetris() {
       </div>
 
       {running && (
-        <div className="w-full max-w-xs grid gap-2 mt-1">
-          <div className="flex justify-center">
-            <ControlBtn onPress={rotatePiece} label="↻" />
-          </div>
-          <div className="grid grid-cols-3 gap-2">
+        <div className="w-full max-w-md grid gap-2.5 mt-1">
+          <div className="grid grid-cols-3 gap-2.5">
             <ControlBtn onPress={() => move(-1, 0)} label="◀" />
-            <ControlBtn onPress={softDrop} label="▼" />
+            <ControlBtn onPress={rotatePiece} label="↻" highlight />
             <ControlBtn onPress={() => move(1, 0)} label="▶" />
           </div>
-          <div className="flex justify-center">
-            <ControlBtn onPress={hardDrop} label="HARD DROP" wide />
+          <div className="grid grid-cols-2 gap-2.5">
+            <ControlBtn onPress={softDrop} label="▼ DOWN" />
+            <ControlBtn onPress={hardDrop} label="⤓ DROP" hard />
           </div>
         </div>
       )}
@@ -630,39 +683,67 @@ export default function Tetris() {
         </div>
       )}
 
-      <p className="text-xs text-gray-500 text-center mt-1">
-        키보드: ←→ 이동 / ↑ 회전 / ↓ 소프트 드롭 / Space 하드 드롭 / P 일시정지
+      <p className="text-[11px] text-gray-500 text-center mt-1 px-2 leading-relaxed">
+        모바일: 화면 탭=회전 / 좌우 드래그=이동 / 아래 살짝=소프트 / 아래 길게=하드<br />
+        키보드: ←→ 이동 / ↑ 회전 / ↓ 소프트 / Space 하드 / P 일시정지
       </p>
     </div>
   );
 }
 
-function Stat({ label, value, warn }: { label: string; value: number | string; warn?: boolean }) {
+function CompactStat({
+  label,
+  value,
+  warn,
+}: {
+  label: string;
+  value: number | string;
+  warn?: boolean;
+}) {
   return (
     <div
-      className={`rounded-lg px-3 py-2 min-w-[70px] text-center ${
+      className={`rounded-lg px-2 py-1 flex items-center gap-1.5 ${
         warn ? 'bg-red-900 text-white' : 'bg-slate-900 text-white'
       }`}
     >
-      <div className={`text-[10px] font-bold ${warn ? 'text-red-200' : 'text-slate-400'}`}>
+      <span
+        className={`text-[9px] font-bold tracking-wider ${
+          warn ? 'text-red-200' : 'text-slate-400'
+        }`}
+      >
         {label}
-      </div>
-      <div className={`text-xl font-bold ${warn ? 'animate-pulse' : ''}`}>{value}</div>
+      </span>
+      <span className={`text-sm font-bold ${warn ? 'animate-pulse' : ''}`}>{value}</span>
     </div>
   );
 }
 
-function ControlBtn({ onPress, label, wide }: { onPress: () => void; label: string; wide?: boolean }) {
+function ControlBtn({
+  onPress,
+  label,
+  highlight,
+  hard,
+}: {
+  onPress: () => void;
+  label: string;
+  highlight?: boolean;
+  hard?: boolean;
+}) {
   const handlers = {
     onPointerDown: (e: React.PointerEvent) => {
       e.preventDefault();
       onPress();
     },
   };
+  const bg = hard
+    ? 'from-pink-500 to-rose-600'
+    : highlight
+      ? 'from-cyan-500 to-blue-600'
+      : 'from-slate-700 to-slate-900';
   return (
     <button
       {...handlers}
-      className={`${wide ? 'col-span-3 w-full' : ''} py-3 bg-gradient-to-br from-slate-700 to-slate-900 text-white font-bold rounded-xl shadow active:scale-95 text-lg`}
+      className={`py-4 sm:py-5 bg-gradient-to-br ${bg} text-white font-black rounded-xl shadow-lg active:scale-95 active:brightness-110 text-2xl sm:text-3xl tracking-wider`}
     >
       {label}
     </button>
