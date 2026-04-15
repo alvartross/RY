@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { Stage } from '@/lib/wordBank';
-import { getEmojiForWord } from '@/lib/wordEmoji';
+import WordIcon from '@/components/WordIcon';
 import { speak } from '@/lib/tts';
 import { awardWordStage, hasClearedStage } from '@/lib/points';
 
@@ -116,7 +116,7 @@ export default function WordQuiz({ stage, onFinish, onExit }: Props) {
       </div>
 
       {q.mode === 'emoji-to-word' ? (
-        <EmojiPrompt emoji={getEmojiForWord(q.answer)} onSpeak={() => speak(q.answer)} />
+        <EmojiPrompt word={q.answer} onSpeak={() => speak(q.answer)} />
       ) : (
         <WordPrompt word={q.answer} onSpeak={() => speak(q.answer)} />
       )}
@@ -139,7 +139,7 @@ export default function WordQuiz({ stage, onFinish, onExit }: Props) {
               {q.mode === 'emoji-to-word' ? (
                 <span>{opt}</span>
               ) : (
-                <span className="text-3xl">{getEmojiForWord(opt)}</span>
+                <WordIcon word={opt} size="md" />
               )}
             </button>
           );
@@ -172,14 +172,14 @@ export default function WordQuiz({ stage, onFinish, onExit }: Props) {
   );
 }
 
-function EmojiPrompt({ emoji, onSpeak }: { emoji: string; onSpeak: () => void }) {
+function EmojiPrompt({ word, onSpeak }: { word: string; onSpeak: () => void }) {
   return (
     <button
       onClick={onSpeak}
-      className="w-full bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl py-8 text-center active:scale-[0.99]"
+      className="w-full bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl py-8 flex flex-col items-center active:scale-[0.99]"
     >
-      <div className="text-[8rem] sm:text-[10rem] leading-none">{emoji}</div>
-      <div className="mt-1 text-sm text-gray-500">🔊 탭하면 발음 들려요</div>
+      <WordIcon word={word} size="2xl" />
+      <div className="mt-4 text-sm text-gray-500">🔊 탭하면 발음 들려요</div>
     </button>
   );
 }

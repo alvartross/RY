@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { PracticeInput } from '@/lib/practice';
-import { getEmojiForWord } from '@/lib/wordEmoji';
+import WordIcon from '@/components/WordIcon';
 import { fillSentence } from '@/lib/sentence';
 import { speak } from '@/lib/tts';
 
@@ -107,9 +107,9 @@ export default function PicturePractice({ input, onFinish }: Props) {
         />
       </div>
 
-      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl py-12 text-center">
-        <div className="text-[10rem] leading-none">{getEmojiForWord(answer.text)}</div>
-        <div className="mt-2 text-gray-600">이 그림은 무엇일까요?</div>
+      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl py-12 text-center flex flex-col items-center">
+        <WordIcon word={answer.text} size="2xl" />
+        <div className="mt-4 text-gray-600">이 그림은 무엇일까요?</div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -126,10 +126,10 @@ export default function PicturePractice({ input, onFinish }: Props) {
               key={`${o.text}-${i}`}
               onClick={() => pick(o.text)}
               disabled={status !== 'asking'}
-              className={`${base} ${color}`}
+              className={`${base} ${color} flex items-center justify-center gap-2`}
             >
-              <span className="mr-2">{getEmojiForWord(o.text)}</span>
-              {o.text}
+              <WordIcon word={o.text} size="md" />
+              <span>{o.text}</span>
             </button>
           );
         })}
