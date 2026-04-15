@@ -15,6 +15,7 @@ export type Lesson = {
   circle?: LessonSection;
   phonics?: LessonSection;
   journeys?: LessonSection;
+  riseReaders?: LessonSection;
   memo?: string;
   updatedAt: number;
 };

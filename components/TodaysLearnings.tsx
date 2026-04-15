@@ -16,6 +16,7 @@ const SECTION_META = {
   circle: { label: 'Circle', icon: '🔵', color: 'bg-pink-50 text-pink-700' },
   phonics: { label: 'Phonics', icon: '🔤', color: 'bg-amber-50 text-amber-700' },
   journeys: { label: 'Journeys', icon: '🚗', color: 'bg-emerald-50 text-emerald-700' },
+  riseReaders: { label: 'RiseReaders', icon: '📘', color: 'bg-violet-50 text-violet-700' },
 } as const;
 
 export default function TodaysLearnings({
@@ -25,7 +26,8 @@ export default function TodaysLearnings({
   isAdmin,
   onOpenAdmin,
 }: Props) {
-  const hasAny = !!lesson && (lesson.circle || lesson.phonics || lesson.journeys);
+  const hasAny =
+    !!lesson && (lesson.circle || lesson.phonics || lesson.journeys || lesson.riseReaders);
 
   return (
     <div className="bg-white rounded-2xl shadow-md p-4 w-full">
@@ -58,6 +60,9 @@ export default function TodaysLearnings({
           {lesson?.circle && <SectionView kind="circle" section={lesson.circle} />}
           {lesson?.phonics && <SectionView kind="phonics" section={lesson.phonics} />}
           {lesson?.journeys && <SectionView kind="journeys" section={lesson.journeys} />}
+          {lesson?.riseReaders && (
+            <SectionView kind="riseReaders" section={lesson.riseReaders} />
+          )}
           {lesson?.memo && (
             <div className="bg-gray-50 rounded-lg p-2 text-xs text-gray-600">📝 {lesson.memo}</div>
           )}

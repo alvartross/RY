@@ -13,12 +13,13 @@ type Props = {
   onDelete?: () => void;
 };
 
-type Tab = 'circle' | 'phonics' | 'journeys';
+type Tab = 'circle' | 'phonics' | 'journeys' | 'riseReaders';
 
 const TABS: { key: Tab; label: string; icon: string; color: string }[] = [
   { key: 'circle', label: 'Circle', icon: '🔵', color: 'from-pink-400 to-rose-500' },
   { key: 'phonics', label: 'Phonics', icon: '🔤', color: 'from-amber-400 to-orange-500' },
   { key: 'journeys', label: 'Journeys', icon: '🚗', color: 'from-emerald-400 to-teal-500' },
+  { key: 'riseReaders', label: 'RiseReaders', icon: '📘', color: 'from-violet-400 to-purple-500' },
 ];
 
 const emptySection = (): LessonSection => ({ words: [], sentences: [] });
@@ -42,10 +43,16 @@ export default function LessonEditor({ date, initial, onSave, onCancel, onDelete
   const [circle, setCircle] = useState<LessonSection>(sectionFromInitial(initial?.circle));
   const [phonics, setPhonics] = useState<LessonSection>(sectionFromInitial(initial?.phonics));
   const [journeys, setJourneys] = useState<LessonSection>(sectionFromInitial(initial?.journeys));
+  const [riseReaders, setRiseReaders] = useState<LessonSection>(
+    sectionFromInitial(initial?.riseReaders)
+  );
   const [memo, setMemo] = useState(initial?.memo ?? '');
 
   const hasAny =
-    sectionHasContent(circle) || sectionHasContent(phonics) || sectionHasContent(journeys);
+    sectionHasContent(circle) ||
+    sectionHasContent(phonics) ||
+    sectionHasContent(journeys) ||
+    sectionHasContent(riseReaders);
   const dateChanged = currentDate !== date;
 
   const save = () => {
@@ -55,6 +62,7 @@ export default function LessonEditor({ date, initial, onSave, onCancel, onDelete
       circle: sectionHasContent(circle) ? normalize(circle) : undefined,
       phonics: sectionHasContent(phonics) ? normalize(phonics) : undefined,
       journeys: sectionHasContent(journeys) ? normalize(journeys) : undefined,
+      riseReaders: sectionHasContent(riseReaders) ? normalize(riseReaders) : undefined,
       memo: memo.trim() || undefined,
       updatedAt: Date.now(),
     });
@@ -138,6 +146,14 @@ export default function LessonEditor({ date, initial, onSave, onCancel, onDelete
           onChange={setJourneys}
           topicLabel="오늘 배운 내용"
           topicPlaceholder="예: Unit 3 - My Family"
+        />
+      )}
+      {tab === 'riseReaders' && (
+        <SectionFields
+          value={riseReaders}
+          onChange={setRiseReaders}
+          topicLabel="오늘 배운 내용"
+          topicPlaceholder="예: Book 5 - The Garden"
         />
       )}
 

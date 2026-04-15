@@ -20,6 +20,8 @@ import { useAdmin } from '@/lib/admin';
 import { todayKey } from '@/lib/date';
 import { awardCategory, type Category } from '@/lib/points';
 import { inputForCategory, type PracticeInput } from '@/lib/practice';
+import { syncLessonsFromCloud } from '@/lib/cloud';
+import { useAuth } from '@/lib/useAuth';
 
 type PracticeView =
   | { kind: 'none' }
@@ -51,10 +53,24 @@ export default function Home() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
   const { isAdmin, enter } = useAdmin();
+  const { user } = useAuth();
 
   useEffect(() => {
     setLessons(getAllLessons());
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    syncLessonsFromCloud().then((res) => {
+      if (cancelled || !res) return;
+      setLessons(getAllLessons());
+      setRefreshKey((k) => k + 1);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const refresh = () => {
     setLessons(getAllLessons());

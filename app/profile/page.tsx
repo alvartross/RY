@@ -5,6 +5,8 @@ import TopBar from '@/components/layout/TopBar';
 import { getProfile, saveProfile, type Profile } from '@/lib/profile';
 import { useAdmin } from '@/lib/admin';
 import { downloadBackup, importFromFile, summarizeBackup } from '@/lib/backup';
+import { uploadLocalLessonsToCloud, syncLessonsFromCloud } from '@/lib/cloud';
+import { useAuth, signOut } from '@/lib/useAuth';
 
 const EMOJI_CHOICES = ['🧒', '👧', '👦', '🐻', '🐱', '🦁', '🐶', '🦊', '🐰', '🐼', '🦄', '🌟'];
 
@@ -19,6 +21,10 @@ export default function ProfilePage() {
   >(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isAdmin } = useAdmin();
+  const { user } = useAuth();
+  const [cloudStatus, setCloudStatus] = useState<
+    null | { kind: 'ok' | 'err'; text: string }
+  >(null);
 
   useEffect(() => {
     const p = getProfile();
@@ -45,6 +51,36 @@ export default function ProfilePage() {
 
   const onImportClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const onUploadToCloud = async () => {
+    setCloudStatus(null);
+    const r = await uploadLocalLessonsToCloud();
+    setCloudStatus({
+      kind: 'ok',
+      text: `클라우드에 ${r.uploaded} / ${r.total}개 수업 업로드 완료`,
+    });
+    setTimeout(() => setCloudStatus(null), 3000);
+  };
+
+  const onPullFromCloud = async () => {
+    setCloudStatus(null);
+    const r = await syncLessonsFromCloud();
+    if (!r) {
+      setCloudStatus({ kind: 'err', text: '동기화 실패' });
+    } else {
+      setCloudStatus({
+        kind: 'ok',
+        text: `클라우드에서 ${r.count}개 수업 받아옴 · 새로고침합니다`,
+      });
+      setTimeout(() => window.location.reload(), 1200);
+    }
+  };
+
+  const onSignOut = async () => {
+    if (!confirm('로그아웃하시겠어요?')) return;
+    await signOut();
+    window.location.href = '/login';
   };
 
   const onFileChosen = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,11 +112,62 @@ export default function ProfilePage() {
       <main className="max-w-3xl mx-auto px-4 pt-6 pb-24 space-y-6">
         <div className="bg-white rounded-2xl shadow p-6 flex items-center gap-4">
           <div className="text-6xl">{profile.emoji}</div>
-          <div>
+          <div className="flex-1 min-w-0">
             <div className="text-xs text-gray-500">프로필</div>
-            <div className="text-2xl font-bold">{profile.name}</div>
+            <div className="text-2xl font-bold truncate">{profile.name}</div>
+            {user?.email && (
+              <div className="text-xs text-gray-400 truncate mt-0.5">{user.email}</div>
+            )}
           </div>
+          {user && (
+            <button
+              onClick={onSignOut}
+              className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full font-semibold"
+            >
+              로그아웃
+            </button>
+          )}
         </div>
+
+        {user && isAdmin && (
+          <div className="bg-white rounded-2xl shadow p-5 space-y-3">
+            <div>
+              <div className="text-sm font-semibold text-gray-700">☁️ 클라우드 동기화</div>
+              <p className="text-xs text-gray-500 mt-1">
+                기기 변경 시 클라우드와 데이터 동기화하세요.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={onUploadToCloud}
+                className="px-4 py-3 bg-gradient-to-br from-emerald-400 to-teal-600 text-white font-bold rounded-lg active:scale-95 text-sm"
+              >
+                ⬆ 이 기기 → 클라우드
+              </button>
+              <button
+                onClick={onPullFromCloud}
+                className="px-4 py-3 bg-gradient-to-br from-cyan-400 to-blue-600 text-white font-bold rounded-lg active:scale-95 text-sm"
+              >
+                ⬇ 클라우드 → 이 기기
+              </button>
+            </div>
+            {cloudStatus && (
+              <div
+                className={[
+                  'text-sm text-center rounded-lg px-3 py-2',
+                  cloudStatus.kind === 'ok'
+                    ? 'bg-green-50 text-green-700'
+                    : 'bg-red-50 text-red-700',
+                ].join(' ')}
+              >
+                {cloudStatus.text}
+              </div>
+            )}
+            <p className="text-[11px] text-gray-400">
+              ※ 현재 수업(lessons)만 동기화. 포인트·프로필은 단계적으로 추가 예정.
+            </p>
+          </div>
+        )}
 
         {isAdmin ? (
           <div className="space-y-6">

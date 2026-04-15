@@ -1,4 +1,5 @@
 import type { Lesson, LessonMap, Word } from './types';
+import { pushLesson, deleteLessonCloud } from './cloud';
 
 const STORAGE_KEY = 'english-kids:lessons';
 
@@ -39,12 +40,13 @@ function migrateSection(s: import('./types').LessonSection | undefined): import(
 
 function migrate(raw: LegacyLesson | Lesson): Lesson {
   const maybe = raw as Partial<Lesson> & LegacyLesson;
-  if (maybe.circle || maybe.phonics || maybe.journeys) {
+  if (maybe.circle || maybe.phonics || maybe.journeys || maybe.riseReaders) {
     return {
       date: maybe.date,
       circle: migrateSection(maybe.circle),
       phonics: migrateSection(maybe.phonics),
       journeys: migrateSection(maybe.journeys),
+      riseReaders: migrateSection(maybe.riseReaders),
       memo: maybe.memo,
       updatedAt: maybe.updatedAt ?? Date.now(),
     };
@@ -101,14 +103,18 @@ export function getLesson(date: string): Lesson | undefined {
 
 export function saveLesson(lesson: Lesson): void {
   const map = read();
-  map[lesson.date] = { ...lesson, updatedAt: Date.now() };
+  const stamped = { ...lesson, updatedAt: Date.now() };
+  map[lesson.date] = stamped;
   write(map);
+  // 클라우드에도 푸시 (실패해도 로컬은 저장됨)
+  void pushLesson(stamped);
 }
 
 export function deleteLesson(date: string): void {
   const map = read();
   delete map[date];
   write(map);
+  void deleteLessonCloud(date);
 }
 
 export function hasLesson(date: string): boolean {
