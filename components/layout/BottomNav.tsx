@@ -8,7 +8,7 @@ const items = [
   { href: '/shop', label: 'Shop', icon: '🎁' },
   { href: '/word-game', label: 'Word', icon: '📝' },
   { href: '/sticker-tree', label: 'Tree', icon: '🌳' },
-  { href: '/tetris', label: 'Tetris', icon: '🎮' },
+  { href: '/game', label: 'Game', icon: '🎮' },
 ];
 
 export default function BottomNav() {

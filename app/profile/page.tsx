@@ -163,11 +163,10 @@ export default function ProfilePage() {
 
         <div className="rounded-2xl shadow p-5 space-y-3" style={{ backgroundColor: 'var(--bg-card)' }}>
           <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>🎨 테마</div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             {([
-              { key: 'default' as Theme, label: '기본', icon: '🌈', bg: 'bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200' },
-              { key: 'dark' as Theme, label: '다크', icon: '🌙', bg: 'bg-gradient-to-br from-slate-800 to-indigo-900' },
-              { key: 'white' as Theme, label: '화이트', icon: '☀️', bg: 'bg-white border border-gray-200' },
+              { key: 'default' as Theme, label: '기본 모드', icon: '🌈', bg: 'bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200' },
+              { key: 'dark' as Theme, label: '다크 모드', icon: '🌙', bg: 'bg-gradient-to-br from-slate-800 to-indigo-900' },
             ]).map((t) => (
               <button
                 key={t.key}

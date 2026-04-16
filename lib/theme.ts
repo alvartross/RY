@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react';
 
-export type Theme = 'default' | 'dark' | 'white';
+export type Theme = 'default' | 'dark';
 
 const KEY = 'english-kids:theme';
 
 export function getTheme(): Theme {
   if (typeof window === 'undefined') return 'default';
   const stored = window.localStorage.getItem(KEY);
-  if (stored === 'dark' || stored === 'white') return stored;
+  if (stored === 'dark') return stored;
   return 'default';
 }
 

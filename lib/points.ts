@@ -106,6 +106,13 @@ export function getAllDailyScores(): DailyPoints {
   return readDaily();
 }
 
+export function resetDailyScore(date: string): void {
+  const d = readDaily();
+  delete d[date];
+  writeDaily(d);
+  import('./cloud').then((c) => void c.pushDailyScores());
+}
+
 export function getHistory(): History {
   return readHistory();
 }

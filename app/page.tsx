@@ -8,7 +8,6 @@ import WritingPractice from '@/components/practice/WritingPractice';
 import PicturePractice from '@/components/practice/PicturePractice';
 import PhonicsPractice from '@/components/practice/PhonicsPractice';
 import TodaysLearnings from '@/components/TodaysLearnings';
-import TodayProgress from '@/components/TodayProgress';
 import TodaysWords from '@/components/TodaysWords';
 import DictionaryWidget from '@/components/DictionaryWidget';
 import TopBar from '@/components/layout/TopBar';
@@ -18,7 +17,7 @@ import type { LessonMap } from '@/lib/types';
 import { getAllLessons, saveLesson, deleteLesson } from '@/lib/storage';
 import { useAdmin } from '@/lib/admin';
 import { todayKey } from '@/lib/date';
-import { awardCategory, getDailyScore, CATEGORY_POINTS, type Category } from '@/lib/points';
+import { awardCategory, getDailyScore, resetDailyScore, CATEGORY_POINTS, type Category } from '@/lib/points';
 import { inputForCategory, type PracticeInput } from '@/lib/practice';
 import { syncAllFromCloud } from '@/lib/cloud';
 import { useAuth } from '@/lib/useAuth';
@@ -155,33 +154,46 @@ export default function Home() {
         <TodaysWords lesson={selectedLesson} />
 
         <section>
-          <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 px-1">
-            학습 메뉴
-          </h2>
+          <div className="flex items-center justify-between mb-2 px-1">
+            <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">학습 메뉴</h2>
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  if (!confirm(`${selectedDate} 학습 현황을 초기화할까요? 포인트 기록은 유지됩니다.`)) return;
+                  resetDailyScore(selectedDate);
+                  setDailyScore(getDailyScore(selectedDate));
+                  setRefreshKey((k) => k + 1);
+                  showToast('학습 현황 초기화 완료');
+                }}
+                className="text-[10px] px-2 py-1 bg-red-100 text-red-700 rounded-full font-semibold hover:bg-red-200"
+              >
+                🔄 학습 초기화
+              </button>
+            )}
+          </div>
           <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5">
             {PRACTICE_LABELS.map((p) => {
               const hasContent = selectedLesson
                 ? inputForCategory(selectedLesson, p.key) !== null
                 : false;
-              const isCompleted = (dailyScore[p.key] ?? 0) >= (CATEGORY_POINTS[p.key] ?? 100);
+              const score = dailyScore[p.key] ?? 0;
+              const maxPt = CATEGORY_POINTS[p.key] ?? 100;
+              const isCompleted = score >= maxPt;
               return (
                 <button
                   key={p.key}
                   onClick={() => startPractice(p.key)}
                   className={[
-                    'aspect-[3/4] rounded-xl sm:rounded-2xl text-white shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center p-1 sm:p-2 relative',
+                    'rounded-xl sm:rounded-2xl text-white shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center p-1.5 sm:p-2 relative',
                     !hasContent
                       ? 'bg-gray-300'
                       : isCompleted
-                        ? `bg-gradient-to-br ${p.color} opacity-70`
+                        ? `bg-gradient-to-br ${p.color} opacity-75`
                         : `bg-gradient-to-br ${p.color} hover:shadow-xl`,
                   ].join(' ')}
                 >
-                  <span className="text-2xl sm:text-3xl" aria-hidden>{p.icon}</span>
-                  <span className="font-bold mt-0.5 text-[10px] sm:text-xs leading-tight text-center whitespace-pre-line">{p.label}</span>
-                  <span className="text-[8px] sm:text-[10px] opacity-90">{p.sub}</span>
                   {!hasContent && (
-                    <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[8px] sm:text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow whitespace-nowrap">
+                    <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[8px] sm:text-[10px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow whitespace-nowrap">
                       수업없음
                     </span>
                   )}
@@ -190,13 +202,29 @@ export default function Home() {
                       학습완료
                     </span>
                   )}
+                  {hasContent && !isCompleted && (
+                    <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[8px] sm:text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow whitespace-nowrap">
+                      학습필요
+                    </span>
+                  )}
+                  <span className="text-2xl sm:text-3xl mt-2" aria-hidden>{p.icon}</span>
+                  <span className="font-bold mt-0.5 text-[10px] sm:text-xs leading-tight text-center whitespace-pre-line">{p.label}</span>
+                  <span className="text-[8px] sm:text-[10px] opacity-80">{p.sub}</span>
+                  <span className={[
+                    'mt-1 text-[9px] sm:text-[11px] font-bold rounded-full px-2 py-0.5',
+                    !hasContent
+                      ? 'bg-white/20'
+                      : isCompleted
+                        ? 'bg-white/30'
+                        : 'bg-black/15',
+                  ].join(' ')}>
+                    {!hasContent ? '—' : isCompleted ? `✓ ${score}P` : `${score}/${maxPt}P`}
+                  </span>
                 </button>
               );
             })}
           </div>
         </section>
-
-        <TodayProgress refreshKey={refreshKey} />
       </main>
 
       <AdminPinModal
