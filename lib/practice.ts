@@ -7,22 +7,6 @@ export type PracticeInput = {
   title?: string;
 };
 
-function mergeReadingSections(lesson: Lesson): Word[] {
-  return [
-    ...(lesson.circle?.words ?? []),
-    ...(lesson.journeys?.words ?? []),
-    ...(lesson.riseReaders?.words ?? []),
-  ];
-}
-
-function firstReadingPattern(lesson: Lesson): string | undefined {
-  return (
-    lesson.circle?.sentencePattern ||
-    lesson.journeys?.sentencePattern ||
-    lesson.riseReaders?.sentencePattern
-  );
-}
-
 export function inputForCategory(lesson: Lesson, category: Category): PracticeInput | null {
   if (category === 'review') {
     const c = lesson.circle;
@@ -38,13 +22,18 @@ export function inputForCategory(lesson: Lesson, category: Category): PracticeIn
     if (!p || p.words.length === 0) return null;
     return { words: p.words, sentencePattern: p.sentencePattern };
   }
-  // listening / writing: Circle + Journeys + RiseReaders (Phonics 제외)
-  const words = mergeReadingSections(lesson);
-  if (words.length === 0) return null;
-  if (category === 'listening') {
-    return { words, sentencePattern: firstReadingPattern(lesson) };
+  if (category === 'riseReaders') {
+    const r = lesson.riseReaders;
+    if (!r || r.words.length === 0) return null;
+    return { words: r.words, sentencePattern: r.sentencePattern, title: r.topic };
   }
-  return { words };
+  // listening / writing: Circle 단어만 사용
+  const c = lesson.circle;
+  if (!c || c.words.length === 0) return null;
+  if (category === 'listening') {
+    return { words: c.words, sentencePattern: c.sentencePattern };
+  }
+  return { words: c.words };
 }
 
 export function sectionSummary(lesson: Lesson): {

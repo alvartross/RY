@@ -599,7 +599,7 @@ export default function Tetris() {
 
       <div
         className="relative touch-none select-none"
-        style={{ width: 'min(92vw, 360px)', aspectRatio: `${COLS}/${ROWS}` }}
+        style={{ height: 'min(48vh, 500px)', aspectRatio: `${COLS}/${ROWS}` }}
         onPointerDown={onPlayPointerDown}
         onPointerMove={onPlayPointerMove}
         onPointerUp={onPlayPointerUp}
@@ -663,14 +663,14 @@ export default function Tetris() {
       </div>
 
       {running && (
-        <div className="w-full max-w-md grid gap-2.5 mt-1">
-          <div className="grid grid-cols-3 gap-2.5">
+        <div className="w-full max-w-sm grid gap-2 mt-1">
+          <div className="grid grid-cols-3 gap-2">
             <ControlBtn onPress={() => move(-1, 0)} label="◀" />
             <ControlBtn onPress={rotatePiece} label="↻" highlight />
             <ControlBtn onPress={() => move(1, 0)} label="▶" />
           </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            <ControlBtn onPress={softDrop} label="▼ DOWN" />
+          <div className="grid grid-cols-2 gap-2">
+            <ControlBtn onPress={softDrop} label="▼" />
             <ControlBtn onPress={hardDrop} label="⤓ DROP" hard />
           </div>
         </div>
@@ -743,7 +743,7 @@ function ControlBtn({
   return (
     <button
       {...handlers}
-      className={`py-4 sm:py-5 bg-gradient-to-br ${bg} text-white font-black rounded-xl shadow-lg active:scale-95 active:brightness-110 text-2xl sm:text-3xl tracking-wider`}
+      className={`py-3 sm:py-4 bg-gradient-to-br ${bg} text-white font-black rounded-xl shadow-lg active:scale-95 active:brightness-110 text-xl sm:text-2xl tracking-wider`}
     >
       {label}
     </button>

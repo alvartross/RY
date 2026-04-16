@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Calendar from '@/components/Calendar';
 import LessonEditor from '@/components/LessonEditor';
-import SentencePractice from '@/components/practice/SentencePractice';
+import WordReviewPractice from '@/components/practice/WordReviewPractice';
 import WritingPractice from '@/components/practice/WritingPractice';
 import PicturePractice from '@/components/practice/PicturePractice';
 import PhonicsPractice from '@/components/practice/PhonicsPractice';
@@ -28,20 +28,23 @@ type PracticeView =
   | { kind: 'review'; input: PracticeInput }
   | { kind: 'phonics'; input: PracticeInput }
   | { kind: 'listening'; input: PracticeInput }
-  | { kind: 'writing'; input: PracticeInput };
+  | { kind: 'writing'; input: PracticeInput }
+  | { kind: 'riseReaders'; input: PracticeInput };
 
 const PRACTICE_LABELS = [
-  { key: 'review', label: "Today's Review", icon: '📖', sub: '문장 완성 복습', color: 'from-pink-400 to-rose-500' },
-  { key: 'listening', label: 'Listening', icon: '🎧', sub: '듣고 고르기', color: 'from-emerald-400 to-teal-500' },
-  { key: 'writing', label: 'Writing', icon: '✍️', sub: '따라 쓰기', color: 'from-violet-400 to-indigo-500' },
-  { key: 'phonics', label: 'Phonics', icon: '🔤', sub: '소리 내어 읽기', color: 'from-amber-400 to-orange-500' },
+  { key: 'review', label: "Today's\nReview", icon: '📖', sub: '단어 복습', color: 'from-pink-400 to-rose-500', section: 'circle' },
+  { key: 'listening', label: 'Listening', icon: '🎧', sub: '듣고 고르기', color: 'from-emerald-400 to-teal-500', section: 'circle' },
+  { key: 'writing', label: 'Writing', icon: '✍️', sub: '따라 쓰기', color: 'from-violet-400 to-indigo-500', section: 'circle' },
+  { key: 'phonics', label: 'Phonics', icon: '🔤', sub: '소리 읽기', color: 'from-amber-400 to-orange-500', section: 'phonics' },
+  { key: 'riseReaders', label: 'Rise\nReaders', icon: '📘', sub: '단어 복습', color: 'from-sky-400 to-blue-500', section: 'riseReaders' },
 ] as const;
 
 const CATEGORY_EMPTY_MSG: Record<Category, string> = {
   review: 'Circle 수업을 먼저 입력해주세요',
   phonics: 'Phonics 수업을 먼저 입력해주세요',
-  listening: '이 날짜에는 수업이 없어요',
-  writing: '이 날짜에는 수업이 없어요',
+  listening: 'Circle 수업을 먼저 입력해주세요',
+  writing: 'Circle 수업을 먼저 입력해주세요',
+  riseReaders: 'RiseReaders 수업을 먼저 입력해주세요',
 };
 
 export default function Home() {
@@ -142,18 +145,33 @@ export default function Home() {
           <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 px-1">
             학습 메뉴
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {PRACTICE_LABELS.map((p) => (
-              <button
-                key={p.key}
-                onClick={() => startPractice(p.key)}
-                className={`aspect-[5/4] sm:aspect-square rounded-2xl bg-gradient-to-br ${p.color} text-white shadow-lg hover:shadow-xl active:scale-95 transition-all flex flex-col items-center justify-center p-2`}
-              >
-                <span className="text-3xl sm:text-4xl" aria-hidden>{p.icon}</span>
-                <span className="font-bold mt-1 text-sm sm:text-base">{p.label}</span>
-                <span className="text-[10px] sm:text-xs opacity-90">{p.sub}</span>
-              </button>
-            ))}
+          <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5">
+            {PRACTICE_LABELS.map((p) => {
+              const hasContent = selectedLesson
+                ? inputForCategory(selectedLesson, p.key) !== null
+                : false;
+              return (
+                <button
+                  key={p.key}
+                  onClick={() => startPractice(p.key)}
+                  className={[
+                    'aspect-[3/4] rounded-xl sm:rounded-2xl text-white shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center p-1 sm:p-2 relative',
+                    hasContent
+                      ? `bg-gradient-to-br ${p.color} hover:shadow-xl`
+                      : 'bg-gray-300',
+                  ].join(' ')}
+                >
+                  <span className="text-2xl sm:text-3xl" aria-hidden>{p.icon}</span>
+                  <span className="font-bold mt-0.5 text-[10px] sm:text-xs leading-tight text-center whitespace-pre-line">{p.label}</span>
+                  <span className="text-[8px] sm:text-[10px] opacity-90">{p.sub}</span>
+                  {!hasContent && (
+                    <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[8px] sm:text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow whitespace-nowrap">
+                      수업없음
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -203,7 +221,7 @@ export default function Home() {
         <div className="fixed inset-0 z-50 bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 overflow-y-auto p-4 flex items-start justify-center">
           <div className="w-full max-w-2xl">
             {practice.kind === 'review' && (
-              <SentencePractice
+              <WordReviewPractice
                 input={practice.input}
                 onFinish={() => finishPractice('review')}
               />
@@ -220,6 +238,12 @@ export default function Home() {
                 onFinish={(info) =>
                   finishPractice('writing', { bonus: info.bonus ? 50 : 0 })
                 }
+              />
+            )}
+            {practice.kind === 'riseReaders' && (
+              <WordReviewPractice
+                input={practice.input}
+                onFinish={() => finishPractice('riseReaders')}
               />
             )}
             {practice.kind === 'phonics' && (

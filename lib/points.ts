@@ -5,13 +5,14 @@ const TOTAL_KEY = 'english-kids:totalPoints';
 const HISTORY_KEY = 'english-kids:pointHistory';
 const WORD_STAGE_KEY = 'english-kids:wordStagePoints';
 
-export type Category = 'review' | 'phonics' | 'listening' | 'writing';
+export type Category = 'review' | 'phonics' | 'listening' | 'writing' | 'riseReaders';
 
 export const CATEGORY_POINTS: Record<Category, number> = {
   review: 100,
   phonics: 100,
   listening: 100,
   writing: 100,
+  riseReaders: 100,
 };
 
 export const CATEGORY_LABEL: Record<Category, string> = {
@@ -19,6 +20,7 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   phonics: 'Phonics',
   listening: 'Listening',
   writing: 'Writing',
+  riseReaders: 'RiseReaders',
 };
 
 type DailyPoints = Record<string, Record<Category, number>>;
@@ -75,7 +77,7 @@ export function addPoints(delta: number, note: { date?: string; category: Catego
 
 export function getDailyScore(date: string): Record<Category, number> {
   const d = readDaily();
-  return d[date] ?? { review: 0, phonics: 0, listening: 0, writing: 0 };
+  return d[date] ?? { review: 0, phonics: 0, listening: 0, writing: 0, riseReaders: 0 };
 }
 
 export function awardCategory(
@@ -84,7 +86,7 @@ export function awardCategory(
   bonus: number = 0
 ): { awarded: number; alreadyDone: boolean; bonus: number } {
   const d = readDaily();
-  const day = d[date] ?? { review: 0, phonics: 0, listening: 0, writing: 0 };
+  const day = d[date] ?? { review: 0, phonics: 0, listening: 0, writing: 0, riseReaders: 0 };
   if (day[category] >= CATEGORY_POINTS[category]) {
     return { awarded: 0, alreadyDone: true, bonus: 0 };
   }

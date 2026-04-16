@@ -8,10 +8,11 @@ const ICONS: Record<Category, string> = {
   review: '📖',
   listening: '🎧',
   writing: '✍️',
+  riseReaders: '📘',
   phonics: '🔤',
 };
 
-const DISPLAY_ORDER: Category[] = ['review', 'listening', 'writing', 'phonics'];
+const DISPLAY_ORDER: Category[] = ['review', 'listening', 'writing', 'phonics', 'riseReaders'];
 
 type Props = { refreshKey?: number };
 
@@ -21,6 +22,7 @@ export default function TodayProgress({ refreshKey }: Props) {
     phonics: 0,
     listening: 0,
     writing: 0,
+    riseReaders: 0,
   });
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export default function TodayProgress({ refreshKey }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-5 gap-2">
         {DISPLAY_ORDER.map((k) => {
           const done = score[k] >= CATEGORY_POINTS[k];
           return (
@@ -75,7 +77,7 @@ export default function TodayProgress({ refreshKey }: Props) {
         />
       </div>
       <p className="text-[11px] text-gray-500 text-center">
-        매일 4가지를 다 완료하면 최대 400P를 받아요
+        매일 5가지를 다 완료하면 최대 500P를 받아요
       </p>
     </section>
   );

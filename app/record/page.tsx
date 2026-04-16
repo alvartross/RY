@@ -23,10 +23,11 @@ const CATEGORY_ICON: Record<Category, string> = {
   review: '📖',
   listening: '🎧',
   writing: '✍️',
+  riseReaders: '📘',
   phonics: '🔤',
 };
 
-const CATEGORY_ORDER: Category[] = ['review', 'listening', 'writing', 'phonics'];
+const CATEGORY_ORDER: Category[] = ['review', 'listening', 'writing', 'phonics', 'riseReaders'];
 
 const DAILY_MAX = Object.values(CATEGORY_POINTS).reduce((a, b) => a + b, 0);
 
@@ -100,6 +101,7 @@ export default function RecordPage() {
           phonics: 0,
           listening: 0,
           writing: 0,
+          riseReaders: 0,
         };
         const t = Object.values(scores).reduce((a, b) => a + b, 0);
         return { date, scores, total: t, isComplete: t >= DAILY_MAX };
@@ -234,6 +236,7 @@ function eventIcon(cat: string): string {
   if (cat === 'review') return '📖';
   if (cat === 'listening') return '🎧';
   if (cat === 'writing') return '✍️';
+  if (cat === 'riseReaders') return '📘';
   if (cat === 'phonics') return '🔤';
   if (cat === 'wordgame') return '📝';
   if (cat === 'shop') return '🎁';
@@ -244,6 +247,7 @@ function eventLabel(cat: string): string {
   if (cat === 'review') return "Today's Review";
   if (cat === 'listening') return 'Listening';
   if (cat === 'writing') return 'Writing';
+  if (cat === 'riseReaders') return 'RiseReaders';
   if (cat === 'phonics') return 'Phonics';
   if (cat === 'wordgame') return 'Word Game';
   if (cat === 'shop') return '상점';
