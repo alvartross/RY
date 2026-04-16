@@ -133,10 +133,10 @@ export async function syncProfileFromCloud(): Promise<boolean> {
   const { data, error } = await sb.from('profiles').select('*').eq('user_id', userId).single();
   if (error || !data) return false;
   const row = data as ProfileRow;
-  const localTotal = Number(window.localStorage.getItem(TOTAL_KEY) ?? '0');
-  // 프로필: 클라우드 우선 (단, 로컬이 비어있지 않으면 큰 값 유지)
-  window.localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: row.name, emoji: row.emoji }));
-  window.localStorage.setItem(TOTAL_KEY, String(Math.max(row.total_points, localTotal)));
+  const cloudTotal = Number(row.total_points) || 0;
+  const localTotal = Number(window.localStorage.getItem(TOTAL_KEY)) || 0;
+  window.localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: row.name ?? '꼬마 영어쟁이', emoji: row.emoji ?? '🧒' }));
+  window.localStorage.setItem(TOTAL_KEY, String(Math.max(cloudTotal, localTotal)));
   if (row.praise_log) {
     const localPraise = safeJSON(window.localStorage.getItem(PRAISE_KEY), {});
     const merged = mergeObjectArrays(localPraise, row.praise_log as Record<string, string[]>);

@@ -53,7 +53,7 @@ function writeHistory(h: History) {
 
 export function getTotalPoints(): number {
   if (typeof window === 'undefined') return 0;
-  return Number(window.localStorage.getItem(TOTAL_KEY) ?? '0');
+  return Number(window.localStorage.getItem(TOTAL_KEY)) || 0;
 }
 
 function setTotalPoints(v: number) {
