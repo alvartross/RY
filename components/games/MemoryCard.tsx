@@ -75,7 +75,7 @@ export default function MemoryCard({ onBack }: Props) {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-4 gap-2.5 w-full max-w-md mx-auto">
+        <div className="grid grid-cols-4 gap-3 w-full mx-auto" style={{ maxWidth: 'min(95vw, 500px)' }}>
           {cards.map((emoji, idx) => {
             const isFlipped = flipped.includes(idx) || matched.has(idx);
             return (
@@ -83,11 +83,11 @@ export default function MemoryCard({ onBack }: Props) {
                 key={idx}
                 onClick={() => flip(idx)}
                 className={[
-                  'aspect-square rounded-2xl text-4xl sm:text-5xl flex items-center justify-center transition-all active:scale-95 shadow-lg',
+                  'aspect-square rounded-2xl text-6xl sm:text-7xl flex items-center justify-center transition-all active:scale-95 shadow-lg',
                   isFlipped
-                    ? 'bg-white rotate-0'
+                    ? 'bg-white'
                     : 'bg-gradient-to-br from-pink-300 to-purple-400',
-                  matched.has(idx) ? 'ring-3 ring-green-400' : '',
+                  matched.has(idx) ? 'ring-3 ring-green-400 bg-green-50' : '',
                 ].join(' ')}
               >
                 {isFlipped ? emoji : '❓'}
