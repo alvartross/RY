@@ -20,4 +20,5 @@ export function getProfile(): Profile {
 export function saveProfile(p: Profile): void {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(KEY, JSON.stringify(p));
+  import('./cloud').then((c) => void c.pushProfile());
 }

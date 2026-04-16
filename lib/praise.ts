@@ -57,6 +57,7 @@ export function givePraise(praiseId: string, date: string = todayKey()): {
   log[date] = dayLog;
   writeLog(log);
   addPoints(item.points, { date, category: 'praise', desc: `칭찬: ${item.label}` });
+  import('./cloud').then((c) => void c.pushProfile());
   return { awarded: item.points, alreadyDone: false };
 }
 

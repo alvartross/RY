@@ -76,6 +76,7 @@ function read(): StickerForest {
 function write(forest: StickerForest) {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(KEY, JSON.stringify(forest));
+  import('./cloud').then((c) => void c.pushProfile());
 }
 
 export function getForest(): StickerForest {

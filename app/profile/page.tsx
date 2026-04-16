@@ -6,7 +6,7 @@ import { getProfile, saveProfile, type Profile } from '@/lib/profile';
 import { useAdmin, changePin } from '@/lib/admin';
 import { downloadBackup, importFromFile, summarizeBackup } from '@/lib/backup';
 import { useTheme, type Theme } from '@/lib/theme';
-import { uploadLocalLessonsToCloud, syncLessonsFromCloud } from '@/lib/cloud';
+import { uploadAllToCloud, syncAllFromCloud } from '@/lib/cloud';
 import { useAuth, signOut } from '@/lib/useAuth';
 
 const EMOJI_CHOICES = [
@@ -75,25 +75,19 @@ export default function ProfilePage() {
 
   const onUploadToCloud = async () => {
     setCloudStatus(null);
-    const r = await uploadLocalLessonsToCloud();
-    setCloudStatus({
-      kind: 'ok',
-      text: `클라우드에 ${r.uploaded} / ${r.total}개 수업 업로드 완료`,
-    });
-    setTimeout(() => setCloudStatus(null), 3000);
+    const r = await uploadAllToCloud();
+    setCloudStatus({ kind: r.ok ? 'ok' : 'err', text: `업로드: ${r.details}` });
+    setTimeout(() => setCloudStatus(null), 4000);
   };
 
   const onPullFromCloud = async () => {
     setCloudStatus(null);
-    const r = await syncLessonsFromCloud();
-    if (!r) {
-      setCloudStatus({ kind: 'err', text: '동기화 실패' });
+    const r = await syncAllFromCloud();
+    if (r.ok) {
+      setCloudStatus({ kind: 'ok', text: `받아옴: ${r.details} · 새로고침합니다` });
+      setTimeout(() => window.location.reload(), 1500);
     } else {
-      setCloudStatus({
-        kind: 'ok',
-        text: `클라우드에서 ${r.count}개 수업 받아옴 · 새로고침합니다`,
-      });
-      setTimeout(() => window.location.reload(), 1200);
+      setCloudStatus({ kind: 'err', text: r.details });
     }
   };
 
@@ -227,7 +221,7 @@ export default function ProfilePage() {
               </div>
             )}
             <p className="text-[11px] text-gray-400">
-              ※ 현재 수업(lessons)만 동기화. 포인트·프로필은 단계적으로 추가 예정.
+              수업·프로필·포인트·활동내역·워드게임·칭찬·스티커·설정 전체 동기화
             </p>
           </div>
         )}

@@ -20,7 +20,7 @@ import { useAdmin } from '@/lib/admin';
 import { todayKey } from '@/lib/date';
 import { awardCategory, getDailyScore, CATEGORY_POINTS, type Category } from '@/lib/points';
 import { inputForCategory, type PracticeInput } from '@/lib/practice';
-import { syncLessonsFromCloud } from '@/lib/cloud';
+import { syncAllFromCloud } from '@/lib/cloud';
 import { useAuth } from '@/lib/useAuth';
 import { addSticker, findAvailableTree } from '@/lib/stickerTree';
 import { CATEGORY_LABEL } from '@/lib/points';
@@ -75,9 +75,10 @@ export default function Home() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    syncLessonsFromCloud().then((res) => {
-      if (cancelled || !res) return;
+    syncAllFromCloud().then((res) => {
+      if (cancelled || !res.ok) return;
       setLessons(getAllLessons());
+      setDailyScore(getDailyScore(selectedDate));
       setRefreshKey((k) => k + 1);
     });
     return () => {

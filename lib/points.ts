@@ -98,6 +98,7 @@ export function awardCategory(
   if (bonus > 0) {
     addPoints(bonus, { date, category, desc: `${CATEGORY_LABEL[category]} 보너스` });
   }
+  import('./cloud').then((c) => { void c.pushDailyScores(); void c.pushProfile(); });
   return { awarded: base + bonus, alreadyDone: false, bonus };
 }
 
@@ -163,5 +164,6 @@ export function spendPoints(amount: number, itemName: string): { ok: boolean; to
     at: Date.now(),
   });
   writeHistory(h);
+  import('./cloud').then((c) => { void c.pushProfile(); void c.pushHistory(); });
   return { ok: true, total: newTotal };
 }
