@@ -7,6 +7,7 @@ const items = [
   { href: '/record', label: 'Record', icon: '📊' },
   { href: '/shop', label: 'Shop', icon: '🎁' },
   { href: '/word-game', label: 'Word', icon: '📝' },
+  { href: '/sticker-tree', label: 'Tree', icon: '🌳' },
   { href: '/tetris', label: 'Tetris', icon: '🎮' },
 ];
 
@@ -15,7 +16,7 @@ export default function BottomNav() {
   const router = useRouter();
   return (
     <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur border-t border-gray-200 shadow-[0_-6px_20px_rgba(0,0,0,0.08)] z-30">
-      <ul className="max-w-3xl mx-auto grid grid-cols-5">
+      <ul className="max-w-3xl mx-auto grid grid-cols-6">
         {items.map((it) => {
           const active = pathname === it.href;
           return (

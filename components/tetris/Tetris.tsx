@@ -655,22 +655,22 @@ export default function Tetris() {
           ) : (
             <button
               onClick={() => setPaused((p) => !p)}
-              className="py-1.5 bg-gradient-to-br from-violet-400 to-purple-500 text-white font-bold rounded-lg shadow active:scale-95 text-xs"
+              className="py-1.5 bg-gradient-to-br from-green-400 to-emerald-600 text-white font-bold rounded-lg shadow active:scale-95 text-xs"
             >
               {paused ? '▶ 계속' : '⏸ 정지'}
             </button>
           )}
           <button
-            onPointerDown={(e) => { e.preventDefault(); rotatePiece(); }}
-            className={`py-4 sm:py-5 bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-black rounded-xl shadow-lg active:scale-95 text-2xl sm:text-3xl ${!running ? 'opacity-40' : ''}`}
-          >
-            ↻
-          </button>
-          <button
             onPointerDown={(e) => { e.preventDefault(); hardDrop(); }}
             className={`py-4 sm:py-5 bg-gradient-to-br from-pink-500 to-rose-600 text-white font-black rounded-xl shadow-lg active:scale-95 text-2xl sm:text-3xl ${!running ? 'opacity-40' : ''}`}
           >
             ⤓
+          </button>
+          <button
+            onPointerDown={(e) => { e.preventDefault(); rotatePiece(); }}
+            className={`py-4 sm:py-5 bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-black rounded-xl shadow-lg active:scale-95 text-2xl sm:text-3xl ${!running ? 'opacity-40' : ''}`}
+          >
+            ↻
           </button>
         </div>
       </div>
