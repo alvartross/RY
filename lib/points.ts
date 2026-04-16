@@ -24,7 +24,7 @@ export const CATEGORY_LABEL: Record<Category, string> = {
 };
 
 type DailyPoints = Record<string, Record<Category, number>>;
-type History = Array<{ date: string; category: Category | 'wordgame' | 'shop'; delta: number; note?: string; at: number }>;
+type History = Array<{ date: string; category: Category | 'wordgame' | 'shop' | 'praise'; delta: number; note?: string; at: number }>;
 type WordStage = Record<string, number>;
 
 function readDaily(): DailyPoints {
@@ -60,7 +60,7 @@ function setTotalPoints(v: number) {
   window.localStorage.setItem(TOTAL_KEY, String(Math.max(0, v)));
 }
 
-export function addPoints(delta: number, note: { date?: string; category: Category | 'wordgame' | 'shop'; desc?: string }): number {
+export function addPoints(delta: number, note: { date?: string; category: Category | 'wordgame' | 'shop' | 'praise'; desc?: string }): number {
   const total = getTotalPoints() + delta;
   setTotalPoints(total);
   const h = readHistory();
@@ -107,6 +107,21 @@ export function getAllDailyScores(): DailyPoints {
 
 export function getHistory(): History {
   return readHistory();
+}
+
+const LEARNING_CATEGORIES = new Set<string>(['review', 'phonics', 'listening', 'writing', 'riseReaders', 'wordgame']);
+
+export function getPointBreakdown(): { total: number; learning: number; praise: number; spent: number } {
+  const h = readHistory();
+  let learning = 0;
+  let praise = 0;
+  let spent = 0;
+  for (const e of h) {
+    if (e.delta > 0 && LEARNING_CATEGORIES.has(e.category)) learning += e.delta;
+    else if (e.delta > 0 && e.category === 'praise') praise += e.delta;
+    else if (e.delta < 0) spent += Math.abs(e.delta);
+  }
+  return { total: getTotalPoints(), learning, praise, spent };
 }
 
 function readStages(): WordStage {

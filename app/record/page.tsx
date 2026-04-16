@@ -238,6 +238,7 @@ function eventIcon(cat: string): string {
   if (cat === 'writing') return '✍️';
   if (cat === 'riseReaders') return '📘';
   if (cat === 'phonics') return '🔤';
+  if (cat === 'praise') return '⭐';
   if (cat === 'wordgame') return '📝';
   if (cat === 'shop') return '🎁';
   return '⭐';
@@ -249,6 +250,7 @@ function eventLabel(cat: string): string {
   if (cat === 'writing') return 'Writing';
   if (cat === 'riseReaders') return 'RiseReaders';
   if (cat === 'phonics') return 'Phonics';
+  if (cat === 'praise') return '칭찬 보상';
   if (cat === 'wordgame') return 'Word Game';
   if (cat === 'shop') return '상점';
   return cat;

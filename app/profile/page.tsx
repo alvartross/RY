@@ -3,12 +3,27 @@
 import { useEffect, useRef, useState } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { getProfile, saveProfile, type Profile } from '@/lib/profile';
-import { useAdmin } from '@/lib/admin';
+import { useAdmin, changePin } from '@/lib/admin';
 import { downloadBackup, importFromFile, summarizeBackup } from '@/lib/backup';
+import { useTheme, type Theme } from '@/lib/theme';
 import { uploadLocalLessonsToCloud, syncLessonsFromCloud } from '@/lib/cloud';
 import { useAuth, signOut } from '@/lib/useAuth';
 
-const EMOJI_CHOICES = ['🧒', '👧', '👦', '🐻', '🐱', '🦁', '🐶', '🦊', '🐰', '🐼', '🦄', '🌟'];
+const EMOJI_CHOICES = [
+  '🧒', '👧', '👦',
+  '👸', '🧚‍♀️', '🧜‍♀️', '❄️', '🍎', '🎀', '🪄',
+  '🐻', '🐱', '🦁', '🐶', '🦊', '🐰', '🐼', '🦄',
+  '🦋', '🌸', '💎', '🌈', '🏰', '⭐', '🌟', '💗',
+];
+
+const SVG_AVATARS = [
+  { id: 'img:princess', label: '공주', src: '/avatars/princess.svg' },
+  { id: 'img:snowqueen', label: '눈의 여왕', src: '/avatars/snowqueen.svg' },
+  { id: 'img:mermaid', label: '인어', src: '/avatars/mermaid.svg' },
+  { id: 'img:bunny', label: '토끼', src: '/avatars/bunny.svg' },
+  { id: 'img:fairy', label: '요정', src: '/avatars/fairy.svg' },
+  { id: 'img:knight', label: '기사', src: '/avatars/knight.svg' },
+];
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile>({ name: '꼬마 영어쟁이', emoji: '🧒' });
@@ -25,6 +40,11 @@ export default function ProfilePage() {
   const [cloudStatus, setCloudStatus] = useState<
     null | { kind: 'ok' | 'err'; text: string }
   >(null);
+  const { theme, set: setAppTheme } = useTheme();
+  const [curPin, setCurPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [pinMsg, setPinMsg] = useState<null | { kind: 'ok' | 'err'; text: string }>(null);
 
   useEffect(() => {
     const p = getProfile();
@@ -75,6 +95,24 @@ export default function ProfilePage() {
       });
       setTimeout(() => window.location.reload(), 1200);
     }
+  };
+
+  const onChangePin = () => {
+    if (newPin !== confirmPin) {
+      setPinMsg({ kind: 'err', text: '새 PIN이 서로 일치하지 않아요' });
+      setTimeout(() => setPinMsg(null), 2500);
+      return;
+    }
+    const result = changePin(curPin, newPin);
+    if (result.ok) {
+      setPinMsg({ kind: 'ok', text: 'PIN이 변경됐어요' });
+      setCurPin('');
+      setNewPin('');
+      setConfirmPin('');
+    } else {
+      setPinMsg({ kind: 'err', text: result.error ?? '실패' });
+    }
+    setTimeout(() => setPinMsg(null), 2500);
   };
 
   const onSignOut = async () => {
@@ -129,10 +167,35 @@ export default function ProfilePage() {
           )}
         </div>
 
+        <div className="rounded-2xl shadow p-5 space-y-3" style={{ backgroundColor: 'var(--bg-card)' }}>
+          <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>🎨 테마</div>
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { key: 'default' as Theme, label: '기본', icon: '🌈', bg: 'bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200' },
+              { key: 'dark' as Theme, label: '다크', icon: '🌙', bg: 'bg-gradient-to-br from-slate-800 to-indigo-900' },
+              { key: 'white' as Theme, label: '화이트', icon: '☀️', bg: 'bg-white border border-gray-200' },
+            ]).map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setAppTheme(t.key)}
+                className={[
+                  'rounded-xl p-3 flex flex-col items-center gap-1 transition-all',
+                  t.bg,
+                  theme === t.key ? 'ring-2 ring-pink-400 scale-105' : 'opacity-80',
+                  t.key === 'dark' ? 'text-white' : 'text-gray-800',
+                ].join(' ')}
+              >
+                <span className="text-2xl">{t.icon}</span>
+                <span className="text-xs font-bold">{t.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {user && isAdmin && (
-          <div className="bg-white rounded-2xl shadow p-5 space-y-3">
+          <div className="rounded-2xl shadow p-5 space-y-3" style={{ backgroundColor: 'var(--bg-card)' }}>
             <div>
-              <div className="text-sm font-semibold text-gray-700">☁️ 클라우드 동기화</div>
+              <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>☁️ 클라우드 동기화</div>
               <p className="text-xs text-gray-500 mt-1">
                 기기 변경 시 클라우드와 데이터 동기화하세요.
               </p>
@@ -188,15 +251,32 @@ export default function ProfilePage() {
               </label>
             </div>
 
-            <div className="bg-white rounded-2xl shadow p-5 space-y-3">
-              <div className="text-sm font-semibold text-gray-700">아이콘</div>
+            <div className="rounded-2xl shadow p-5 space-y-3" style={{ backgroundColor: 'var(--bg-card)' }}>
+              <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>캐릭터 아바타</div>
               <div className="grid grid-cols-6 gap-2">
+                {SVG_AVATARS.map((a) => (
+                  <button
+                    key={a.id}
+                    onClick={() => commit({ ...profile, emoji: a.id })}
+                    className={[
+                      'aspect-square rounded-xl transition-all p-1',
+                      profile.emoji === a.id
+                        ? 'bg-gradient-to-br from-pink-200 to-orange-200 ring-2 ring-pink-400'
+                        : 'bg-gray-100 hover:bg-gray-200',
+                    ].join(' ')}
+                  >
+                    <img src={a.src} alt={a.label} className="w-full h-full" />
+                  </button>
+                ))}
+              </div>
+              <div className="text-sm font-semibold mt-2" style={{ color: 'var(--text-primary)' }}>이모지 아이콘</div>
+              <div className="grid grid-cols-8 gap-1.5">
                 {EMOJI_CHOICES.map((e) => (
                   <button
                     key={e}
                     onClick={() => commit({ ...profile, emoji: e })}
                     className={[
-                      'aspect-square text-3xl rounded-xl transition-all',
+                      'aspect-square text-2xl rounded-lg transition-all',
                       profile.emoji === e
                         ? 'bg-gradient-to-br from-pink-200 to-orange-200 ring-2 ring-pink-400'
                         : 'bg-gray-100 hover:bg-gray-200',
@@ -208,6 +288,56 @@ export default function ProfilePage() {
               </div>
             </div>
             {saved && <div className="text-center text-sm text-green-600">저장됨</div>}
+
+            <div className="bg-white rounded-2xl shadow p-5 space-y-3">
+              <div className="text-sm font-semibold text-gray-700">🔑 PIN 변경</div>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                value={curPin}
+                onChange={(e) => setCurPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                placeholder="현재 PIN"
+                className="w-full px-3 py-2 border rounded-lg text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={newPin}
+                  onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  placeholder="새 PIN"
+                  className="px-3 py-2 border rounded-lg text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={confirmPin}
+                  onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  placeholder="새 PIN 확인"
+                  className={[
+                    'px-3 py-2 border rounded-lg text-center tracking-widest focus:outline-none focus:ring-2',
+                    confirmPin.length === 4 && newPin !== confirmPin
+                      ? 'border-red-300 focus:ring-red-400'
+                      : 'focus:ring-blue-400',
+                  ].join(' ')}
+                />
+              </div>
+              <button
+                onClick={onChangePin}
+                disabled={curPin.length !== 4 || newPin.length !== 4 || confirmPin.length !== 4}
+                className="w-full py-2 bg-gradient-to-br from-blue-400 to-blue-600 text-white font-bold rounded-lg disabled:opacity-40"
+              >
+                PIN 변경
+              </button>
+              {pinMsg && (
+                <div className={`text-sm text-center rounded-lg px-3 py-2 ${pinMsg.kind === 'ok' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  {pinMsg.text}
+                </div>
+              )}
+            </div>
 
             <div className="bg-white rounded-2xl shadow p-5 space-y-3">
               <div>

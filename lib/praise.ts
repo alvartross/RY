@@ -56,7 +56,7 @@ export function givePraise(praiseId: string, date: string = todayKey()): {
   dayLog.push(praiseId);
   log[date] = dayLog;
   writeLog(log);
-  addPoints(item.points, { date, category: 'shop', desc: `칭찬: ${item.label}` });
+  addPoints(item.points, { date, category: 'praise', desc: `칭찬: ${item.label}` });
   return { awarded: item.points, alreadyDone: false };
 }
 

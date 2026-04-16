@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import AppShell from '@/components/layout/AppShell';
+import ThemeInit from '@/components/layout/ThemeInit';
 import './globals.css';
 
 const geistSans = Geist({
@@ -33,7 +34,14 @@ export default function RootLayout({
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50">
+      <body
+        className="min-h-full flex flex-col"
+        style={{
+          background: 'linear-gradient(135deg, var(--bg-page-from), var(--bg-page-via), var(--bg-page-to))',
+          color: 'var(--text-primary)',
+        }}
+      >
+        <ThemeInit />
         <AppShell>{children}</AppShell>
       </body>
     </html>

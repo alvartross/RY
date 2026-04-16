@@ -15,7 +15,7 @@ export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   return (
-    <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur border-t border-gray-200 shadow-[0_-6px_20px_rgba(0,0,0,0.08)] z-30">
+    <nav className="fixed bottom-0 inset-x-0 backdrop-blur border-t z-30" style={{ backgroundColor: 'var(--nav-bg)', borderColor: 'var(--border)', boxShadow: `0 -6px 20px var(--nav-shadow)` }}>
       <ul className="max-w-3xl mx-auto grid grid-cols-6">
         {items.map((it) => {
           const active = pathname === it.href;

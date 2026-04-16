@@ -3,20 +3,25 @@
 import { useEffect, useState } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import Modal from '@/components/Modal';
+import PraisePanel from '@/components/PraisePanel';
 import { REWARDS, type RewardItem } from '@/lib/rewards';
-import { getTotalPoints, getHistory, spendPoints } from '@/lib/points';
+import { getTotalPoints, getHistory, spendPoints, getPointBreakdown } from '@/lib/points';
+import { useAdmin } from '@/lib/admin';
 
 type Purchase = { at: number; itemId: string; itemName: string; price: number };
 
 export default function ShopPage() {
   const [points, setPoints] = useState(0);
+  const [breakdown, setBreakdown] = useState({ total: 0, learning: 0, praise: 0, spent: 0 });
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [buying, setBuying] = useState<RewardItem | null>(null);
   const [justBought, setJustBought] = useState<RewardItem | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const { isAdmin } = useAdmin();
 
   const reload = () => {
     setPoints(getTotalPoints());
+    setBreakdown(getPointBreakdown());
     const h = getHistory()
       .filter((e) => e.category === 'shop' && e.delta < 0)
       .map<Purchase>((e) => ({
@@ -55,10 +60,28 @@ export default function ShopPage() {
           </p>
         </header>
 
-        <div className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-400 rounded-2xl p-5 shadow-lg text-white text-center">
-          <div className="text-sm opacity-90">내 포인트</div>
-          <div className="text-4xl font-bold">⭐ {points.toLocaleString()}P</div>
+        <div className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-400 rounded-2xl p-5 shadow-lg text-white">
+          <div className="text-center">
+            <div className="text-sm opacity-90">내 포인트</div>
+            <div className="text-4xl font-bold">⭐ {points.toLocaleString()}P</div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
+            <div className="bg-white/20 rounded-lg py-1.5 px-1">
+              <div className="opacity-80">📖 학습</div>
+              <div className="font-bold">{breakdown.learning.toLocaleString()}P</div>
+            </div>
+            <div className="bg-white/20 rounded-lg py-1.5 px-1">
+              <div className="opacity-80">⭐ 칭찬</div>
+              <div className="font-bold">{breakdown.praise.toLocaleString()}P</div>
+            </div>
+            <div className="bg-white/20 rounded-lg py-1.5 px-1">
+              <div className="opacity-80">🎁 사용</div>
+              <div className="font-bold">{breakdown.spent.toLocaleString()}P</div>
+            </div>
+          </div>
         </div>
+
+        <PraisePanel onPointsChange={reload} />
 
         <section>
           <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 px-1">

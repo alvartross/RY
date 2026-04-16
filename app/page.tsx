@@ -12,14 +12,13 @@ import TodayProgress from '@/components/TodayProgress';
 import TodaysWords from '@/components/TodaysWords';
 import DictionaryWidget from '@/components/DictionaryWidget';
 import TopBar from '@/components/layout/TopBar';
-import PraisePanel from '@/components/PraisePanel';
 import AdminPinModal from '@/components/AdminPinModal';
 import Modal from '@/components/Modal';
 import type { LessonMap } from '@/lib/types';
 import { getAllLessons, saveLesson, deleteLesson } from '@/lib/storage';
 import { useAdmin } from '@/lib/admin';
 import { todayKey } from '@/lib/date';
-import { awardCategory, type Category } from '@/lib/points';
+import { awardCategory, getDailyScore, CATEGORY_POINTS, type Category } from '@/lib/points';
 import { inputForCategory, type PracticeInput } from '@/lib/practice';
 import { syncLessonsFromCloud } from '@/lib/cloud';
 import { useAuth } from '@/lib/useAuth';
@@ -58,12 +57,20 @@ export default function Home() {
   const [practice, setPractice] = useState<PracticeView>({ kind: 'none' });
   const [refreshKey, setRefreshKey] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
+  const [dailyScore, setDailyScore] = useState<Record<Category, number>>({
+    review: 0, phonics: 0, listening: 0, writing: 0, riseReaders: 0,
+  });
   const { isAdmin, enter } = useAdmin();
   const { user } = useAuth();
 
   useEffect(() => {
     setLessons(getAllLessons());
+    setDailyScore(getDailyScore(selectedDate));
   }, []);
+
+  useEffect(() => {
+    setDailyScore(getDailyScore(selectedDate));
+  }, [selectedDate, refreshKey]);
 
   useEffect(() => {
     if (!user) return;
@@ -155,15 +162,18 @@ export default function Home() {
               const hasContent = selectedLesson
                 ? inputForCategory(selectedLesson, p.key) !== null
                 : false;
+              const isCompleted = (dailyScore[p.key] ?? 0) >= (CATEGORY_POINTS[p.key] ?? 100);
               return (
                 <button
                   key={p.key}
                   onClick={() => startPractice(p.key)}
                   className={[
                     'aspect-[3/4] rounded-xl sm:rounded-2xl text-white shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center p-1 sm:p-2 relative',
-                    hasContent
-                      ? `bg-gradient-to-br ${p.color} hover:shadow-xl`
-                      : 'bg-gray-300',
+                    !hasContent
+                      ? 'bg-gray-300'
+                      : isCompleted
+                        ? `bg-gradient-to-br ${p.color} opacity-70`
+                        : `bg-gradient-to-br ${p.color} hover:shadow-xl`,
                   ].join(' ')}
                 >
                   <span className="text-2xl sm:text-3xl" aria-hidden>{p.icon}</span>
@@ -174,6 +184,11 @@ export default function Home() {
                       수업없음
                     </span>
                   )}
+                  {hasContent && isCompleted && (
+                    <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[8px] sm:text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow whitespace-nowrap">
+                      학습완료
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -181,8 +196,6 @@ export default function Home() {
         </section>
 
         <TodayProgress refreshKey={refreshKey} />
-
-        {isAdmin && <PraisePanel onPointsChange={() => setRefreshKey((k) => k + 1)} />}
       </main>
 
       <AdminPinModal
@@ -227,6 +240,11 @@ export default function Home() {
       {practice.kind !== 'none' && (
         <div className="fixed inset-0 z-50 bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 overflow-y-auto p-4 flex items-start justify-center">
           <div className="w-full max-w-2xl">
+            {(dailyScore[practice.kind] ?? 0) >= (CATEGORY_POINTS[practice.kind] ?? 100) && (
+              <div className="mb-3 bg-green-100 border border-green-300 text-green-800 rounded-xl px-4 py-2 text-center text-sm font-semibold">
+                ✅ 오늘 이미 학습 완료! 다시 할 수 있지만 추가 포인트는 없어요.
+              </div>
+            )}
             {practice.kind === 'review' && (
               <WordReviewPractice
                 input={practice.input}
