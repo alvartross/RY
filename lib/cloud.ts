@@ -106,24 +106,36 @@ export async function pushProfile(): Promise<boolean> {
   const userId = await getUserId();
   if (!sb || !userId || typeof window === 'undefined') return false;
   const profile = safeJSON(window.localStorage.getItem(PROFILE_KEY), { name: '꼬마 영어쟁이', emoji: '🧒' });
-  const totalPoints = Number(window.localStorage.getItem(TOTAL_KEY) ?? '0');
+  const totalPoints = Number(window.localStorage.getItem(TOTAL_KEY)) || 0;
   const praiseLog = safeJSON(window.localStorage.getItem(PRAISE_KEY), {});
   const stickerForest = safeJSON(window.localStorage.getItem(STICKER_KEY), { trees: [null, null] });
   const theme = window.localStorage.getItem(THEME_KEY) ?? 'default';
   const pin = window.localStorage.getItem(PIN_KEY) ?? '1234';
-  const { error } = await sb.from('profiles').upsert({
+
+  // 먼저 핵심 필드만 업데이트 시도
+  const { error: coreError } = await sb.from('profiles').upsert({
     user_id: userId,
-    name: profile.name,
-    emoji: profile.emoji,
+    name: profile.name ?? '꼬마 영어쟁이',
+    emoji: profile.emoji ?? '🧒',
     total_points: totalPoints,
+    updated_at: new Date().toISOString(),
+  });
+  if (coreError) {
+    console.warn('[cloud] pushProfile core failed', coreError.message);
+    return false;
+  }
+
+  // 확장 필드 업데이트 (마이그레이션 안 됐으면 실패해도 OK)
+  await sb.from('profiles').update({
     praise_log: praiseLog,
     sticker_forest: stickerForest,
     theme,
     admin_pin: pin,
-    updated_at: new Date().toISOString(),
+  }).eq('user_id', userId).then(({ error }) => {
+    if (error) console.warn('[cloud] pushProfile extras skipped', error.message);
   });
-  if (error) console.warn('[cloud] pushProfile', error.message);
-  return !error;
+
+  return true;
 }
 
 export async function syncProfileFromCloud(): Promise<boolean> {
@@ -288,15 +300,17 @@ export async function pushVisits(): Promise<boolean> {
 export async function uploadAllToCloud(): Promise<{ ok: boolean; details: string }> {
   const userId = await getUserId();
   if (!userId) return { ok: false, details: '로그인 필요' };
+  const pt = Number(window?.localStorage.getItem(TOTAL_KEY)) || 0;
   const results = await Promise.all([
     uploadLocalLessonsToCloud().then((r) => `수업 ${r.uploaded}/${r.total}`),
-    pushProfile().then((ok) => `프로필 ${ok ? '✓' : '✗'}`),
+    pushProfile().then((ok) => `프로필(${pt}P) ${ok ? '✓' : '✗'}`),
     pushDailyScores().then((ok) => `일별점수 ${ok ? '✓' : '✗'}`),
     pushHistory().then((ok) => `활동내역 ${ok ? '✓' : '✗'}`),
     pushWordStages().then((ok) => `워드게임 ${ok ? '✓' : '✗'}`),
     pushVisits().then((ok) => `방문기록 ${ok ? '✓' : '✗'}`),
   ]);
-  return { ok: true, details: results.join(' · ') };
+  const anyFail = results.some((r) => r.includes('✗'));
+  return { ok: !anyFail, details: results.join(' · ') };
 }
 
 export async function syncAllFromCloud(): Promise<{ ok: boolean; details: string }> {
