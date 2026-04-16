@@ -23,7 +23,7 @@ import { awardCategory, type Category } from '@/lib/points';
 import { inputForCategory, type PracticeInput } from '@/lib/practice';
 import { syncLessonsFromCloud } from '@/lib/cloud';
 import { useAuth } from '@/lib/useAuth';
-import { addSticker } from '@/lib/stickerTree';
+import { addSticker, findAvailableTree } from '@/lib/stickerTree';
 import { CATEGORY_LABEL } from '@/lib/points';
 
 type PracticeView =
@@ -113,7 +113,8 @@ export default function Home() {
     if (alreadyDone) {
       showToast('오늘은 이미 포인트를 받았어요 😊');
     } else {
-      addSticker(`학습: ${CATEGORY_LABEL[category]}`, '📚', selectedDate);
+      const treeIdx = findAvailableTree();
+      if (treeIdx !== null) addSticker(`학습: ${CATEGORY_LABEL[category]}`, '📚', selectedDate, treeIdx);
       const extraMsg = gotBonus > 0 ? ` (보너스 +${gotBonus}P)` : '';
       showToast(`+${awarded}P 획득!${extraMsg} 🌿스티커+1`);
       setRefreshKey((k) => k + 1);

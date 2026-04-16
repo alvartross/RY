@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PRAISE_LIST, givePraise, isPraiseGivenToday } from '@/lib/praise';
-import { addSticker, getTree } from '@/lib/stickerTree';
+import { addSticker, findAvailableTree } from '@/lib/stickerTree';
 import { todayKey } from '@/lib/date';
 
 type Props = {
@@ -18,8 +18,9 @@ export default function PraisePanel({ onPointsChange }: Props) {
     if (alreadyDone) {
       setToast('오늘은 이미 받았어요');
     } else {
-      addSticker(`칭찬: ${item.label}`, item.emoji, today);
-      setToast(`${item.emoji} +${awarded}P! 스티커도 1개 추가`);
+      const treeIdx = findAvailableTree();
+      if (treeIdx !== null) addSticker(`칭찬: ${item.label}`, item.emoji, today, treeIdx);
+      setToast(`${item.emoji} +${awarded}P!${treeIdx !== null ? ' 🌿스티커+1' : ''}`);
       onPointsChange();
     }
     setTimeout(() => setToast(null), 2000);
