@@ -4,6 +4,35 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import type { PracticeInput } from '@/lib/practice';
 import { getEmojiForWord } from '@/lib/wordEmoji';
 
+const STROKE_HINTS: Record<string, { arrows: string; desc: string }> = {
+  a: { arrows: '↺↓', desc: '둥글게 후 내려' },
+  b: { arrows: '↓↻', desc: '내려서 둥글게' },
+  c: { arrows: '↺', desc: '둥글게' },
+  d: { arrows: '↺↑↓', desc: '둥글게 후 올려서 내려' },
+  e: { arrows: '→↺', desc: '가로 후 둥글게' },
+  f: { arrows: '↺↓→', desc: '꺾어 내려, 가로' },
+  g: { arrows: '↺↓', desc: '둥글게 후 아래로' },
+  h: { arrows: '↓↻', desc: '내려서 넘겨' },
+  i: { arrows: '↓ ·', desc: '내려, 점' },
+  j: { arrows: '↓↺ ·', desc: '내려 꺾어, 점' },
+  k: { arrows: '↓↙↘', desc: '내려, 꺾어 내려' },
+  l: { arrows: '↓', desc: '내려' },
+  m: { arrows: '↓↗↓↗↓', desc: '내려 올려 내려 올려 내려' },
+  n: { arrows: '↓↗↓', desc: '내려 올려 내려' },
+  o: { arrows: '↺', desc: '둥글게' },
+  p: { arrows: '↓↻', desc: '내려서 둥글게' },
+  q: { arrows: '↺↓', desc: '둥글게 후 내려' },
+  r: { arrows: '↓↗', desc: '내려, 살짝 올려' },
+  s: { arrows: '↺↻', desc: 'S자 곡선' },
+  t: { arrows: '↓→', desc: '내려, 가로' },
+  u: { arrows: '↓↗↓', desc: '내려 올려 내려' },
+  v: { arrows: '↘↗', desc: '비스듬히 내려 올려' },
+  w: { arrows: '↘↗↘↗', desc: '지그재그' },
+  x: { arrows: '↘ ↗', desc: '엑스' },
+  y: { arrows: '↘↙', desc: '비스듬히 내려, 꺾어' },
+  z: { arrows: '→↙→', desc: '가로, 비스듬히, 가로' },
+};
+
 type Props = {
   input: PracticeInput;
   onFinish: (info: { bonus: boolean; averageCoverage: number }) => void;
@@ -81,6 +110,7 @@ export default function WritingPractice({ input, onFinish }: Props) {
         </div>
       </div>
 
+      <StrokeGuide word={word.text} />
       <TraceBoard ref={boardRef} key={word.text} word={word.text} onChange={refreshLive} />
 
       <div className="flex gap-3 justify-between pt-1">
@@ -407,3 +437,50 @@ const TraceRow = forwardRef<TraceRowHandle, RowProps>(function TraceRow(
     </div>
   );
 });
+
+function StrokeGuide({ word }: { word: string }) {
+  const [open, setOpen] = useState(true);
+  const letters = word.toLowerCase().split('');
+  return (
+    <div className="bg-indigo-50 rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-indigo-700"
+      >
+        <span>✏️ 쓰는 순서 가이드</span>
+        <span>{open ? '접기 ▲' : '펼치기 ▼'}</span>
+      </button>
+      {open && (
+        <div className="px-3 pb-3 flex gap-1 overflow-x-auto">
+          {letters.map((ch, i) => {
+            const hint = STROKE_HINTS[ch];
+            if (!hint) {
+              return (
+                <div
+                  key={`${ch}-${i}`}
+                  className="shrink-0 w-12 h-16 bg-white rounded-lg flex flex-col items-center justify-center shadow-sm"
+                >
+                  <span className="text-2xl font-bold text-gray-800">{ch}</span>
+                </div>
+              );
+            }
+            return (
+              <div
+                key={`${ch}-${i}`}
+                className="shrink-0 w-14 bg-white rounded-lg flex flex-col items-center py-1.5 shadow-sm"
+              >
+                <span className="text-2xl font-bold text-gray-800">{ch}</span>
+                <span className="text-sm text-indigo-600 tracking-wider leading-none mt-0.5">
+                  {hint.arrows}
+                </span>
+                <span className="text-[7px] text-gray-500 mt-0.5 leading-tight text-center px-0.5">
+                  {hint.desc}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

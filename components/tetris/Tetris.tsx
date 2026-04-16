@@ -586,106 +586,111 @@ export default function Tetris() {
 
   return (
     <div className="flex flex-col items-center gap-2 w-full">
-      <div className="flex items-center gap-1.5 w-full max-w-md justify-center flex-wrap">
-        <CompactStat label="TIME" value={formatTime(timeLeft)} warn={timerWarn} />
-        <CompactStat label="SCORE" value={score} />
-        <CompactStat label="LINES" value={lines} />
-        <CompactStat label="LEVEL" value={level} />
-        <div className="bg-slate-900 rounded-lg px-2 py-1 flex items-center gap-1.5">
-          <span className="text-[10px] text-slate-400 font-bold">NEXT</span>
-          <canvas ref={nextRef} width={60} height={60} className="rounded w-9 h-9" />
-        </div>
-      </div>
-
-      <div
-        className="relative touch-none select-none"
-        style={{ height: 'min(48vh, 500px)', aspectRatio: `${COLS}/${ROWS}` }}
-        onPointerDown={onPlayPointerDown}
-        onPointerMove={onPlayPointerMove}
-        onPointerUp={onPlayPointerUp}
-        onPointerCancel={onPlayPointerUp}
-      >
-        <canvas
-          ref={canvasRef}
-          width={COLS * TILE}
-          height={ROWS * TILE}
-          className="rounded-lg shadow-lg w-full h-full pointer-events-none"
-        />
-        {flash && (
-          <div
-            key={flash.key}
-            className="pointer-events-none absolute inset-0 flex items-center justify-center"
-          >
-            <span
-              className={`text-5xl sm:text-6xl font-black tracking-wider bg-gradient-to-br ${flash.color} bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] animate-[praise_0.9s_ease-out_forwards]`}
+      <div className="flex gap-2 w-full max-w-lg justify-center">
+        {/* 좌: 게임 보드 */}
+        <div
+          className="relative touch-none select-none shrink-0"
+          style={{ height: 'min(52vh, 420px)', aspectRatio: `${COLS}/${ROWS}` }}
+          onPointerDown={onPlayPointerDown}
+          onPointerMove={onPlayPointerMove}
+          onPointerUp={onPlayPointerUp}
+          onPointerCancel={onPlayPointerUp}
+        >
+          <canvas
+            ref={canvasRef}
+            width={COLS * TILE}
+            height={ROWS * TILE}
+            className="rounded-lg shadow-lg w-full h-full pointer-events-none"
+          />
+          {flash && (
+            <div
+              key={flash.key}
+              className="pointer-events-none absolute inset-0 flex items-center justify-center"
             >
-              {flash.text}
-            </span>
-          </div>
-        )}
-        {paused && running && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg pointer-events-none">
-            <span className="text-3xl font-black text-white">⏸ PAUSED</span>
-          </div>
-        )}
-        {!running && !gameOver && (
-          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center rounded-lg gap-2 pointer-events-none">
-            <span className="text-2xl font-bold text-white">▶ 시작 버튼을 누르세요</span>
-            <span className="text-xs text-white/80">화면을 탭하면 회전, 좌우 드래그로 이동</span>
-          </div>
-        )}
-        <style jsx>{`
-          @keyframes praise {
-            0% { transform: scale(0.3); opacity: 0; }
-            30% { transform: scale(1.2); opacity: 1; }
-            60% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.1); opacity: 0; }
-          }
-        `}</style>
-      </div>
-
-      <div className="flex gap-2">
-        {!running || gameOver ? (
-          <button
-            onClick={start}
-            className="px-6 py-2.5 bg-gradient-to-br from-cyan-400 to-blue-500 text-white font-bold rounded-xl shadow-lg active:scale-95"
-          >
-            {gameOver ? '🔁 다시 시작' : '▶ 시작'}
-          </button>
-        ) : (
-          <button
-            onClick={() => setPaused((p) => !p)}
-            className="px-6 py-2.5 bg-gradient-to-br from-violet-400 to-purple-500 text-white font-bold rounded-xl shadow-lg active:scale-95"
-          >
-            {paused ? '▶ 계속' : '⏸ 일시정지'}
-          </button>
-        )}
-      </div>
-
-      {running && (
-        <div className="w-full max-w-sm grid gap-2 mt-1">
-          <div className="grid grid-cols-3 gap-2">
-            <ControlBtn onPress={() => move(-1, 0)} label="◀" />
-            <ControlBtn onPress={rotatePiece} label="↻" highlight />
-            <ControlBtn onPress={() => move(1, 0)} label="▶" />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <ControlBtn onPress={softDrop} label="▼" />
-            <ControlBtn onPress={hardDrop} label="⤓ DROP" hard />
-          </div>
+              <span
+                className={`text-4xl font-black tracking-wider bg-gradient-to-br ${flash.color} bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] animate-[praise_0.9s_ease-out_forwards]`}
+              >
+                {flash.text}
+              </span>
+            </div>
+          )}
+          {paused && running && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg pointer-events-none">
+              <span className="text-2xl font-black text-white">⏸</span>
+            </div>
+          )}
+          {!running && !gameOver && (
+            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center rounded-lg gap-1 pointer-events-none px-2">
+              <span className="text-lg font-bold text-white">▶ 시작</span>
+              <span className="text-[9px] text-white/80 text-center">탭=회전 드래그=이동</span>
+            </div>
+          )}
+          <style jsx>{`
+            @keyframes praise {
+              0% { transform: scale(0.3); opacity: 0; }
+              30% { transform: scale(1.2); opacity: 1; }
+              60% { transform: scale(1); opacity: 1; }
+              100% { transform: scale(1.1); opacity: 0; }
+            }
+          `}</style>
         </div>
-      )}
+
+        {/* 우: 스탯 + NEXT + 액션 버튼 */}
+        <div className="flex flex-col gap-1.5 justify-between min-w-[80px] sm:min-w-[100px]">
+          <CompactStat label="TIME" value={formatTime(timeLeft)} warn={timerWarn} />
+          <CompactStat label="SCORE" value={score} />
+          <CompactStat label="LINES" value={lines} />
+          <CompactStat label="LEVEL" value={level} />
+          <div className="bg-slate-900 rounded-lg p-1.5 flex flex-col items-center">
+            <span className="text-[9px] text-slate-400 font-bold">NEXT</span>
+            <canvas ref={nextRef} width={60} height={60} className="rounded w-10 h-10" />
+          </div>
+          {(!running || gameOver) ? (
+            <button
+              onClick={start}
+              className="py-2 bg-gradient-to-br from-green-400 to-emerald-600 text-white font-bold rounded-lg shadow-lg active:scale-95 text-sm"
+            >
+              {gameOver ? '🔁 재시작' : '▶ 시작'}
+            </button>
+          ) : (
+            <button
+              onClick={() => setPaused((p) => !p)}
+              className="py-1.5 bg-gradient-to-br from-violet-400 to-purple-500 text-white font-bold rounded-lg shadow active:scale-95 text-xs"
+            >
+              {paused ? '▶ 계속' : '⏸ 정지'}
+            </button>
+          )}
+          <button
+            onPointerDown={(e) => { e.preventDefault(); rotatePiece(); }}
+            className={`py-4 sm:py-5 bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-black rounded-xl shadow-lg active:scale-95 text-2xl sm:text-3xl ${!running ? 'opacity-40' : ''}`}
+          >
+            ↻
+          </button>
+          <button
+            onPointerDown={(e) => { e.preventDefault(); hardDrop(); }}
+            className={`py-4 sm:py-5 bg-gradient-to-br from-pink-500 to-rose-600 text-white font-black rounded-xl shadow-lg active:scale-95 text-2xl sm:text-3xl ${!running ? 'opacity-40' : ''}`}
+          >
+            ⤓
+          </button>
+        </div>
+      </div>
+
+      {/* 하단: 이동 컨트롤 (◀ ▼ ▶) */}
+      <div className={`w-full max-w-lg grid grid-cols-3 gap-2 ${!running ? 'opacity-40' : ''}`}>
+        <ControlBtn onPress={() => move(-1, 0)} label="◀" />
+        <ControlBtn onPress={softDrop} label="▼" />
+        <ControlBtn onPress={() => move(1, 0)} label="▶" />
+      </div>
 
       {gameOver && (
-        <div className="bg-red-50 rounded-xl p-4 text-center w-full max-w-xs">
-          <div className="text-2xl font-bold text-red-600">GAME OVER</div>
-          <div className="text-sm text-gray-600 mt-1">최종 점수: {score}</div>
+        <div className="bg-red-50 rounded-xl p-3 text-center w-full max-w-xs">
+          <div className="text-xl font-bold text-red-600">GAME OVER</div>
+          <div className="text-sm text-gray-600">점수: {score}</div>
         </div>
       )}
 
-      <p className="text-[11px] text-gray-500 text-center mt-1 px-2 leading-relaxed">
-        모바일: 화면 탭=회전 / 좌우 드래그=이동 / 아래 살짝=소프트 / 아래 길게=하드<br />
-        키보드: ←→ 이동 / ↑ 회전 / ↓ 소프트 / Space 하드 / P 일시정지
+      <p className="text-[10px] text-gray-500 text-center px-2">
+        탭=회전 · 좌우드래그=이동 · 아래드래그=드롭 · 키보드: ←→↑↓ Space P
       </p>
     </div>
   );

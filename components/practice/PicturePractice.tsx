@@ -73,8 +73,7 @@ export default function PicturePractice({ input, onFinish }: Props) {
     setPicked(text);
     if (text.toLowerCase() === answer.text.toLowerCase()) {
       setStatus('correct');
-      const sentence = fillSentence(input.sentencePattern ?? '___', answer.text);
-      speak(sentence);
+      speak(answer.text);
       window.setTimeout(advance, 1800);
     } else {
       setStatus('wrong');
@@ -139,7 +138,7 @@ export default function PicturePractice({ input, onFinish }: Props) {
         <div className="bg-green-50 rounded-xl p-3 text-center space-y-1 animate-pulse">
           <div className="text-2xl font-bold">✅ 정답!</div>
           <div className="text-lg font-semibold text-gray-700">
-            {fillSentence(input.sentencePattern ?? '___', answer.text)}
+            {answer.text}
           </div>
           <div className="text-xs text-gray-500">잠시 후 다음 문제로 넘어가요</div>
         </div>

@@ -11,16 +11,16 @@ type Props = {
   onFinish: () => void;
 };
 
-type Repeat = 3 | 5;
+const REPEAT = 3;
 
 export default function WordReviewPractice({ input, onFinish }: Props) {
-  const [repeat, setRepeat] = useState<Repeat | null>(null);
   const [wordIdx, setWordIdx] = useState(0);
   const [listenCount, setListenCount] = useState(0);
   const [meaning, setMeaning] = useState<string | null>(null);
 
   const word = input.words[wordIdx];
   const total = input.words.length;
+  const repeat = REPEAT;
 
   useEffect(() => {
     if (!word) return;
@@ -30,31 +30,6 @@ export default function WordReviewPractice({ input, onFinish }: Props) {
     });
     speak(word.text);
   }, [word]);
-
-  if (!repeat) {
-    return (
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl text-center space-y-6">
-        <h2 className="text-3xl font-bold">몇 번씩 들을까요?</h2>
-        <div className="flex gap-4 justify-center">
-          <button
-            onClick={() => setRepeat(3)}
-            className="px-10 py-6 bg-gradient-to-br from-green-400 to-green-600 text-white text-3xl font-bold rounded-2xl shadow-lg active:scale-95"
-          >
-            3회
-          </button>
-          <button
-            onClick={() => setRepeat(5)}
-            className="px-10 py-6 bg-gradient-to-br from-blue-400 to-blue-600 text-white text-3xl font-bold rounded-2xl shadow-lg active:scale-95"
-          >
-            5회
-          </button>
-        </div>
-        <button onClick={onFinish} className="text-gray-500 underline">
-          돌아가기
-        </button>
-      </div>
-    );
-  }
 
   if (!word) return null;
 
