@@ -22,7 +22,7 @@ export default function GameHeader({ gameId, title, score, extra, paused, onBack
         className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold shadow-sm active:scale-95 transition-all"
         style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
       >
-        ← 나가기
+        🎮 게임목록
       </button>
 
       <div className="flex items-center gap-2 text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>

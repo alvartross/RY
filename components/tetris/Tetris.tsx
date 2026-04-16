@@ -212,7 +212,9 @@ function dropIntervalFor(level: number): number {
   return Math.max(100, 1000 - (level - 1) * 80);
 }
 
-export default function Tetris() {
+type TetrisProps = { onBack?: () => void };
+
+export default function Tetris({ onBack }: TetrisProps = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nextRef = useRef<HTMLCanvasElement>(null);
   const [board, setBoard] = useState<Board>(emptyBoard);
@@ -590,7 +592,7 @@ export default function Tetris() {
         {/* 좌: 게임 보드 */}
         <div
           className="relative touch-none select-none shrink-0"
-          style={{ height: 'min(52vh, 420px)', aspectRatio: `${COLS}/${ROWS}` }}
+          style={{ height: 'min(58vh, 480px)', aspectRatio: `${COLS}/${ROWS}` }}
           onPointerDown={onPlayPointerDown}
           onPointerMove={onPlayPointerMove}
           onPointerUp={onPlayPointerUp}
@@ -636,14 +638,14 @@ export default function Tetris() {
         </div>
 
         {/* 우: 스탯 + NEXT + 액션 버튼 */}
-        <div className="flex flex-col gap-1.5 justify-between min-w-[80px] sm:min-w-[100px]">
+        <div className="flex flex-col gap-1.5 justify-between flex-1 min-w-[100px] max-w-[130px]">
           <CompactStat label="TIME" value={formatTime(timeLeft)} warn={timerWarn} />
           <CompactStat label="SCORE" value={score} />
           <CompactStat label="LINES" value={lines} />
           <CompactStat label="LEVEL" value={level} />
-          <div className="bg-slate-900 rounded-lg p-1.5 flex flex-col items-center">
-            <span className="text-[9px] text-slate-400 font-bold">NEXT</span>
-            <canvas ref={nextRef} width={60} height={60} className="rounded w-10 h-10" />
+          <div className="bg-slate-900 rounded-lg p-2 flex flex-col items-center flex-1">
+            <span className="text-[10px] text-slate-400 font-bold">NEXT</span>
+            <canvas ref={nextRef} width={60} height={60} className="rounded w-full max-w-[60px] aspect-square" />
           </div>
           {(!running || gameOver) ? (
             <button
@@ -661,12 +663,6 @@ export default function Tetris() {
             </button>
           )}
           <button
-            onPointerDown={(e) => { e.preventDefault(); hardDrop(); }}
-            className={`py-4 sm:py-5 bg-gradient-to-br from-pink-500 to-rose-600 text-white font-black rounded-xl shadow-lg active:scale-95 text-2xl sm:text-3xl ${!running ? 'opacity-40' : ''}`}
-          >
-            ⤓
-          </button>
-          <button
             onPointerDown={(e) => { e.preventDefault(); rotatePiece(); }}
             className={`py-4 sm:py-5 bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-black rounded-xl shadow-lg active:scale-95 text-2xl sm:text-3xl ${!running ? 'opacity-40' : ''}`}
           >
@@ -675,11 +671,28 @@ export default function Tetris() {
         </div>
       </div>
 
-      {/* 하단: 이동 컨트롤 (◀ ▼ ▶) */}
-      <div className={`w-full max-w-lg grid grid-cols-3 gap-2 ${!running ? 'opacity-40' : ''}`}>
-        <ControlBtn onPress={() => move(-1, 0)} label="◀" />
-        <ControlBtn onPress={softDrop} label="▼" />
-        <ControlBtn onPress={() => move(1, 0)} label="▶" />
+      {/* 하단: 이동 + 드롭 + 게임목록 */}
+      <div className={`w-full max-w-lg space-y-2 ${!running ? 'opacity-40' : ''}`}>
+        <div className="grid grid-cols-3 gap-2">
+          <ControlBtn onPress={() => move(-1, 0)} label="◀" />
+          <ControlBtn onPress={softDrop} label="▼" />
+          <ControlBtn onPress={() => move(1, 0)} label="▶" />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => onBack?.()}
+            className="py-3 rounded-xl font-bold text-sm active:scale-95 shadow"
+            style={{ backgroundColor: 'var(--bg-card, #fff)', color: 'var(--text-primary, #333)' }}
+          >
+            🎮 게임목록
+          </button>
+          <button
+            onPointerDown={(e) => { e.preventDefault(); hardDrop(); }}
+            className="py-3 bg-gradient-to-br from-pink-500 to-rose-600 text-white font-black rounded-xl shadow-lg active:scale-95 text-lg"
+          >
+            ⤓ DROP
+          </button>
+        </div>
       </div>
 
       {gameOver && (
@@ -707,18 +720,18 @@ function CompactStat({
 }) {
   return (
     <div
-      className={`rounded-lg px-2 py-1 flex items-center gap-1.5 ${
+      className={`rounded-lg px-3 py-1.5 flex items-center justify-between w-full ${
         warn ? 'bg-red-900 text-white' : 'bg-slate-900 text-white'
       }`}
     >
       <span
-        className={`text-[9px] font-bold tracking-wider ${
+        className={`text-[10px] font-bold ${
           warn ? 'text-red-200' : 'text-slate-400'
         }`}
       >
         {label}
       </span>
-      <span className={`text-sm font-bold ${warn ? 'animate-pulse' : ''}`}>{value}</span>
+      <span className={`text-base font-bold ${warn ? 'animate-pulse' : ''}`}>{value}</span>
     </div>
   );
 }

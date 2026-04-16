@@ -28,23 +28,12 @@ export default function GamePage() {
       <>
         <TopBar />
         <main className="max-w-3xl mx-auto px-4 pt-4 pb-24">
-          {game === 'tetris' && <Tetris />}
+          {game === 'tetris' && <Tetris onBack={() => setGame(null)} />}
           {game === 'memory' && <MemoryCard onBack={() => setGame(null)} />}
           {game === 'icecream' && <IceCreamStack onBack={() => setGame(null)} />}
           {game === 'spot' && <SpotDifference onBack={() => setGame(null)} />}
           {game === 'car' && <CarDodge onBack={() => setGame(null)} />}
           {game === 'balloon' && <BalloonPop onBack={() => setGame(null)} />}
-          {game === 'tetris' && (
-            <div className="mt-4 text-center">
-              <button
-                onClick={() => setGame(null)}
-                className="px-4 py-2 bg-gray-100 rounded-lg text-sm font-semibold"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                ← 게임 목록으로
-              </button>
-            </div>
-          )}
         </main>
       </>
     );

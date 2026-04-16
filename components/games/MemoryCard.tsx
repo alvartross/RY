@@ -55,7 +55,7 @@ export default function MemoryCard({ onBack }: Props) {
     <div className="flex flex-col items-center gap-4 w-full max-w-sm mx-auto">
       <div className="flex items-center justify-between w-full">
         <button onClick={onBack} className="text-sm px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200">
-          ← 뒤로
+          🎮 게임목록
         </button>
         <div className="text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
           시도: {moves}회

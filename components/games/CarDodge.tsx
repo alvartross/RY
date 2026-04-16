@@ -182,7 +182,7 @@ export default function CarDodge({ onBack }: Props) {
   return (
     <div className="flex flex-col items-center gap-3 w-full">
       <div className="flex items-center justify-between w-full max-w-xs">
-        <button onClick={onBack} className="text-sm px-3 py-1.5 rounded-lg bg-gray-100">← 뒤로</button>
+        <button onClick={onBack} className="text-sm px-3 py-1.5 rounded-lg bg-gray-100">🎮 게임목록</button>
         <div className="text-sm font-bold">⭐ {score} · {'❤️'.repeat(Math.max(0, lives))}</div>
       </div>
       <canvas
